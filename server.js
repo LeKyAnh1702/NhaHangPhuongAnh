@@ -1,51 +1,48 @@
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const path = require('path');
+require('dotenv').config();
 
-const port = 8080;
-const server = http.createServer((req, res) => {
-    let filePath = '.' + req.url;
-    if (filePath === './') filePath = './index.html';
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-    const extname = String(path.extname(filePath)).toLowerCase();
-    const mimeTypes = {
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.css': 'text/css',
-        '.json': 'application/json',
-        '.png': 'image/png',
-        '.jpg': 'image/jpg',
-        '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
-        '.wav': 'audio/wav',
-        '.mp4': 'video/mp4',
-        '.woff': 'application/font-woff',
-        '.ttf': 'application/font-ttf',
-        '.eot': 'application/vnd.ms-fontobject',
-        '.otf': 'application/font-otf',
-        '.wasm': 'application/wasm'
-    };
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static('public'));
+app.use('/images', express.static('images'));
 
-    const contentType = mimeTypes[extname] || 'application/octet-stream';
+// Import routes
+const authRoutes = require('./routes/auth');
+const customerRoutes = require('./routes/customer');
+const managerRoutes = require('./routes/manager');
+const adminRoutes = require('./routes/admin');
 
-    fs.readFile(filePath, (error, content) => {
-        if (error) {
-            if(error.code == 'ENOENT'){
-                res.writeHead(404, { 'Content-Type': 'text/html' });
-                res.end('404 Not Found', 'utf-8');
-            }
-            else {
-                res.writeHead(500);
-                res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
-            }
-        }
-        else {
-            res.writeHead(200, { 'Content-Type': contentType });
-            res.end(content, 'utf-8');
-        }
-    });
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/customer', customerRoutes);
+app.use('/api/manager', managerRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Serve HTML pages
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-server.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
-}); 
+app.get('/customer', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'customer', 'index.html'));
+});
+
+app.get('/manager', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}/`);
+});
