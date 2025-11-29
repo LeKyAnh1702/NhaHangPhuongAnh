@@ -13,27 +13,57 @@
         <nav>
             <ul>
                 <li><a href="/">Trang Chủ</a></li>
+                <li><a href="#users">Quản Lý Users</a></li>
                 <li><a href="#inventory">Quản Lý Kho</a></li>
                 <li><a href="#menu">Quản Lý Thực Đơn</a></li>
+                <li><a href="#combos">Quản Lý Combo</a></li>
+                <li><a href="#suppliers">Nhà Cung Cấp</a></li>
+                <li><a href="#vouchers">Voucher</a></li>
                 <li><a href="#tables">Quản Lý Bàn</a></li>
                 <li><a href="#reports">Báo Cáo</a></li>
             </ul>
         </nav>
     </header>
     <main>
+        <section id="users-section">
+            <h2>Quản Lý Người Dùng</h2>
+            <button class="btn-primary" onclick="showUserModal()">Thêm Người Dùng</button>
+            <div id="usersList"></div>
+        </section>
+
         <section id="inventory-section">
             <h2>Quản Lý Kho & Nguyên Vật Liệu</h2>
             <div class="action-buttons">
                 <button class="btn-primary" onclick="showImportModal()">Nhập Kho</button>
                 <button class="btn-primary" onclick="showExportModal()">Xuất Kho</button>
+                <button class="btn-primary" onclick="loadInventoryLogs()">Xem Lịch Sử</button>
             </div>
             <div id="inventoryList"></div>
+            <div id="inventoryLogsList"></div>
         </section>
 
         <section id="menu-section">
-            <h2>Quản Lý Thực Đơn & Combo</h2>
-            <button class="btn-primary" onclick="showMenuModal()">Thêm Món/Combo</button>
+            <h2>Quản Lý Thực Đơn</h2>
+            <button class="btn-primary" onclick="showMenuModal()">Thêm Món</button>
             <div id="menuList"></div>
+        </section>
+
+        <section id="combos-section">
+            <h2>Quản Lý Combo</h2>
+            <button class="btn-primary" onclick="showComboModal()">Thêm Combo</button>
+            <div id="combosList"></div>
+        </section>
+
+        <section id="suppliers-section">
+            <h2>Quản Lý Nhà Cung Cấp</h2>
+            <button class="btn-primary" onclick="showSupplierModal()">Thêm Nhà Cung Cấp</button>
+            <div id="suppliersList"></div>
+        </section>
+
+        <section id="vouchers-section">
+            <h2>Quản Lý Voucher</h2>
+            <button class="btn-primary" onclick="showVoucherModal()">Thêm Voucher</button>
+            <div id="vouchersList"></div>
         </section>
 
         <section id="tables-section">

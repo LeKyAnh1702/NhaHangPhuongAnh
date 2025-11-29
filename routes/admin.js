@@ -17,6 +17,101 @@ router.get('/inventory', async (req, res) => {
     }
 });
 
+// Quản lý tài khoản người dùng
+router.get('/users', async (req, res) => {
+    try {
+        const users = await db.collection('users').get();
+        const usersList = users.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, users: usersList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/users', async (req, res) => {
+    try {
+        const { email, name, role, phone } = req.body;
+        
+        const userRef = await db.collection('users').add({
+            email,
+            name,
+            role: role || 'customer',
+            phone,
+            points: 0,
+            isActive: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({ success: true, userId: userRef.id });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.put('/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = {
+            ...req.body,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
+        await db.collection('users').doc(id).update(updateData);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.delete('/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.collection('users').doc(id).update({ isActive: false });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Quản lý nhà cung cấp
+router.get('/suppliers', async (req, res) => {
+    try {
+        const suppliers = await db.collection('suppliers').get();
+        const suppliersList = suppliers.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, suppliers: suppliersList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/suppliers', async (req, res) => {
+    try {
+        const { name, contact, phone, email, address } = req.body;
+        
+        const supplierRef = await db.collection('suppliers').add({
+            name,
+            contact,
+            phone,
+            email,
+            address,
+            isActive: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({ success: true, supplierId: supplierRef.id });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
 // Quản lý kho, NVL (nhập/xuất)
 router.post('/inventory/import', async (req, res) => {
     try {
@@ -52,6 +147,9 @@ router.post('/inventory/import', async (req, res) => {
                 quantity: item.quantity,
                 price: item.price,
                 supplier: item.supplier,
+                supplierId: item.supplierId || null,
+                createdBy: req.body.createdBy || 'admin',
+                note: item.note || '',
                 createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
         }
@@ -245,6 +343,126 @@ router.get('/reports/revenue', async (req, res) => {
                 totalOrders: orders.size
             }
         });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lịch sử nhập xuất kho
+router.get('/inventory/logs', async (req, res) => {
+    try {
+        const { startDate, endDate, type, inventoryId } = req.query;
+        let logsQuery = db.collection('inventory_logs');
+        
+        if (inventoryId) {
+            logsQuery = logsQuery.where('inventoryId', '==', inventoryId);
+        }
+        if (type) {
+            logsQuery = logsQuery.where('type', '==', type);
+        }
+        if (startDate && endDate) {
+            logsQuery = logsQuery
+                .where('createdAt', '>=', new Date(startDate))
+                .where('createdAt', '<=', new Date(endDate));
+        }
+        
+        const logs = await logsQuery.orderBy('createdAt', 'desc').limit(100).get();
+        
+        const logsList = logs.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, logs: logsList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Quản lý voucher
+router.get('/vouchers', async (req, res) => {
+    try {
+        const vouchers = await db.collection('vouchers').get();
+        const vouchersList = vouchers.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, vouchers: vouchersList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/vouchers', async (req, res) => {
+    try {
+        const { code, discount, discountType, minOrder, maxDiscount, expiryDate, usageLimit, description } = req.body;
+        // discountType: 'percent' or 'fixed'
+        
+        const voucherRef = await db.collection('vouchers').add({
+            code,
+            discount,
+            discountType: discountType || 'percent',
+            minOrder: minOrder || 0,
+            maxDiscount: maxDiscount || null,
+            expiryDate: expiryDate ? new Date(expiryDate) : null,
+            usageLimit: usageLimit || null,
+            usedCount: 0,
+            description,
+            isActive: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({ success: true, voucherId: voucherRef.id });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.put('/vouchers/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.collection('vouchers').doc(id).update({
+            ...req.body,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Quản lý combo
+router.get('/combos', async (req, res) => {
+    try {
+        const combos = await db.collection('combos').get();
+        const combosList = combos.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, combos: combosList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/combos', async (req, res) => {
+    try {
+        const { name, description, price, items, imageUrl } = req.body;
+        // items: [{ menuId, quantity }]
+        
+        const comboRef = await db.collection('combos').add({
+            name,
+            description,
+            price,
+            items,
+            imageUrl,
+            isActive: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({ success: true, comboId: comboRef.id });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
     }

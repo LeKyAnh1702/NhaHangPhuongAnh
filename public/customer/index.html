@@ -20,11 +20,51 @@
         </nav>
     </header>
     <main>
+        <section id="auth-section" style="display: none;">
+            <h2>Đăng Nhập / Đăng Ký</h2>
+            <div class="auth-tabs">
+                <button onclick="showLogin()">Đăng Nhập</button>
+                <button onclick="showRegister()">Đăng Ký</button>
+            </div>
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Mật khẩu">
+                <button onclick="login()">Đăng Nhập</button>
+            </div>
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <input type="text" id="registerName" placeholder="Họ và tên">
+                <input type="email" id="registerEmail" placeholder="Email">
+                <input type="password" id="registerPassword" placeholder="Mật khẩu">
+                <input type="tel" id="registerPhone" placeholder="Số điện thoại">
+                <button onclick="register()">Đăng Ký</button>
+            </div>
+        </section>
+
+        <section id="profile-section" style="display: none;">
+            <h2>Thông Tin Cá Nhân</h2>
+            <div class="profile-form">
+                <input type="text" id="profileName" placeholder="Họ và tên">
+                <input type="tel" id="profilePhone" placeholder="Số điện thoại">
+                <input type="text" id="profileAddress" placeholder="Địa chỉ">
+                <button onclick="updateProfile()">Cập Nhật</button>
+            </div>
+        </section>
+
         <section id="menu-section">
             <h2>Thực Đơn</h2>
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn...">
-                <button onclick="searchMenu()">Tìm kiếm</button>
+            <div class="menu-filters">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn...">
+                    <button onclick="searchMenu()">Tìm kiếm</button>
+                </div>
+                <div class="category-filter">
+                    <button onclick="loadMenu()">Tất cả</button>
+                    <div id="categoryButtons"></div>
+                </div>
+                <div class="menu-tabs">
+                    <button onclick="showMenuTab()" class="active">Món ăn</button>
+                    <button onclick="showComboTab()">Combo</button>
+                </div>
             </div>
             <div class="menu-grid" id="menuGrid">
                 <!-- Menu items will be loaded here -->
@@ -44,6 +84,18 @@
             <div class="discount-info" id="discountInfo" style="display: none;">
                 <p>Giảm giá: <span id="discountAmount">0</span> VNĐ</p>
             </div>
+            <div class="delivery-type">
+                <label><input type="radio" name="deliveryType" value="at-table" checked> Tại bàn</label>
+                <label><input type="radio" name="deliveryType" value="takeaway"> Mang về</label>
+                <label><input type="radio" name="deliveryType" value="delivery"> Giao hàng</label>
+            </div>
+            <div id="deliveryAddress" style="display: none;">
+                <input type="text" id="addressInput" placeholder="Địa chỉ giao hàng">
+            </div>
+            <div class="points-usage">
+                <label><input type="checkbox" id="usePoints"> Dùng điểm tích lũy</label>
+                <input type="number" id="pointsToUse" placeholder="Số điểm" min="0" style="display: none;">
+            </div>
             <div class="final-total">
                 <p>Thành tiền: <span id="finalTotal">0</span> VNĐ</p>
             </div>
@@ -60,7 +112,9 @@
             <div class="points-info">
                 <p>Điểm hiện tại: <span id="currentPoints">0</span></p>
                 <p>1 điểm = 1,000 VNĐ</p>
+                <button onclick="loadPointsHistory()">Xem lịch sử tích điểm</button>
             </div>
+            <div id="pointsHistory" style="display: none;"></div>
         </section>
     </main>
 

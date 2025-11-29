@@ -45,6 +45,40 @@ async function loadMenu() {
     }
 }
 
+// Load combos
+async function loadCombos() {
+    try {
+        const response = await fetch('/api/admin/combos');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayCombos(data.combos);
+        }
+    } catch (error) {
+        console.error('Error loading combos:', error);
+    }
+}
+
+function displayCombos(combos) {
+    const combosList = document.getElementById('combosList');
+    if (!combosList) return;
+    
+    combosList.innerHTML = '';
+    combos.forEach(combo => {
+        const comboDiv = document.createElement('div');
+        comboDiv.className = 'combo-item';
+        comboDiv.innerHTML = `
+            <h3>${combo.name}</h3>
+            <p>${combo.description || ''}</p>
+            <p>Giá: ${combo.price.toLocaleString()} VNĐ</p>
+            <p>Số món: ${combo.items ? combo.items.length : 0}</p>
+            <button onclick="editCombo('${combo.id}')">Sửa</button>
+            <button onclick="deleteCombo('${combo.id}')">Xóa</button>
+        `;
+        combosList.appendChild(comboDiv);
+    });
+}
+
 function displayMenu(menu) {
     const menuList = document.getElementById('menuList');
     menuList.innerHTML = '';
@@ -164,9 +198,145 @@ function displayInventoryReport(report) {
     `;
 }
 
+// Load users
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayUsers(data.users);
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+function displayUsers(users) {
+    const usersList = document.getElementById('usersList');
+    if (!usersList) return;
+    
+    usersList.innerHTML = '';
+    users.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-item';
+        userDiv.innerHTML = `
+            <h3>${user.name || user.email}</h3>
+            <p>Email: ${user.email}</p>
+            <p>Role: ${user.role}</p>
+            <p>Điểm: ${user.points || 0}</p>
+            <button onclick="editUser('${user.id}')">Sửa</button>
+            <button onclick="deleteUser('${user.id}')">Xóa</button>
+        `;
+        usersList.appendChild(userDiv);
+    });
+}
+
+// Load suppliers
+async function loadSuppliers() {
+    try {
+        const response = await fetch('/api/admin/suppliers');
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySuppliers(data.suppliers);
+        }
+    } catch (error) {
+        console.error('Error loading suppliers:', error);
+    }
+}
+
+function displaySuppliers(suppliers) {
+    const suppliersList = document.getElementById('suppliersList');
+    if (!suppliersList) return;
+    
+    suppliersList.innerHTML = '';
+    suppliers.forEach(supplier => {
+        const supplierDiv = document.createElement('div');
+        supplierDiv.className = 'supplier-item';
+        supplierDiv.innerHTML = `
+            <h3>${supplier.name}</h3>
+            <p>Liên hệ: ${supplier.contact || 'N/A'}</p>
+            <p>SĐT: ${supplier.phone || 'N/A'}</p>
+            <p>Email: ${supplier.email || 'N/A'}</p>
+            <button onclick="editSupplier('${supplier.id}')">Sửa</button>
+        `;
+        suppliersList.appendChild(supplierDiv);
+    });
+}
+
+// Load vouchers
+async function loadVouchers() {
+    try {
+        const response = await fetch('/api/admin/vouchers');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayVouchers(data.vouchers);
+        }
+    } catch (error) {
+        console.error('Error loading vouchers:', error);
+    }
+}
+
+function displayVouchers(vouchers) {
+    const vouchersList = document.getElementById('vouchersList');
+    if (!vouchersList) return;
+    
+    vouchersList.innerHTML = '';
+    vouchers.forEach(voucher => {
+        const voucherDiv = document.createElement('div');
+        voucherDiv.className = 'voucher-item';
+        voucherDiv.innerHTML = `
+            <h3>${voucher.code}</h3>
+            <p>Giảm: ${voucher.discount}${voucher.discountType === 'percent' ? '%' : ' VNĐ'}</p>
+            <p>Đã dùng: ${voucher.usedCount || 0}/${voucher.usageLimit || '∞'}</p>
+            <p>Hết hạn: ${voucher.expiryDate ? new Date(voucher.expiryDate.toDate()).toLocaleDateString('vi-VN') : 'Không'}</p>
+            <button onclick="editVoucher('${voucher.id}')">Sửa</button>
+        `;
+        vouchersList.appendChild(voucherDiv);
+    });
+}
+
+// Load inventory logs
+async function loadInventoryLogs() {
+    try {
+        const response = await fetch('/api/admin/inventory/logs');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayInventoryLogs(data.logs);
+        }
+    } catch (error) {
+        console.error('Error loading inventory logs:', error);
+    }
+}
+
+function displayInventoryLogs(logs) {
+    const logsList = document.getElementById('inventoryLogsList');
+    if (!logsList) return;
+    
+    logsList.innerHTML = '';
+    logs.forEach(log => {
+        const logDiv = document.createElement('div');
+        logDiv.className = 'log-item';
+        logDiv.innerHTML = `
+            <p><strong>${log.type === 'import' ? 'Nhập' : log.type === 'export' ? 'Xuất' : 'Điều chỉnh'}</strong></p>
+            <p>Số lượng: ${log.quantity}</p>
+            <p>Lý do: ${log.reason || log.note || 'N/A'}</p>
+            <p>Ngày: ${new Date(log.createdAt?.toDate()).toLocaleString('vi-VN')}</p>
+        `;
+        logsList.appendChild(logDiv);
+    });
+}
+
 // Initialize
 loadInventory();
 loadMenu();
+loadCombos();
 loadTables();
+loadUsers();
+loadSuppliers();
+loadVouchers();
 
 

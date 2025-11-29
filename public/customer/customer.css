@@ -84,5 +84,102 @@
     font-weight: bold;
     color: #8d5524;
 }
+.auth-section, .profile-section {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+.auth-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.auth-tabs button {
+    padding: 10px 20px;
+    background: #8d5524;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+.auth-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+.menu-filters {
+    margin-bottom: 24px;
+}
+.category-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+.category-filter button {
+    padding: 8px 16px;
+    background: #fff8f0;
+    border: 1px solid #8d5524;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.menu-tabs {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+.menu-tabs button {
+    padding: 10px 20px;
+    background: #fff8f0;
+    border: 1px solid #8d5524;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.menu-tabs button.active {
+    background: #8d5524;
+    color: white;
+}
+.delivery-type {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+}
+.delivery-type label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.points-usage {
+    margin-top: 16px;
+}
+.points-usage label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.order-item {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.order-item button {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: #8d5524;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 8px;
+}
 
 

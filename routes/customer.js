@@ -3,10 +3,42 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const admin = require('firebase-admin');
 
+// Cập nhật thông tin cá nhân
+router.put('/profile/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const updateData = {
+            ...req.body,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
+        await db.collection('users').doc(userId).update(updateData);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lấy chi tiết đơn hàng
+router.get('/orders/:orderId', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+        
+        if (!orderDoc.exists) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
+        }
+        
+        res.json({ success: true, order: { id: orderDoc.id, ...orderDoc.data() } });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
 // Đặt hàng online
 router.post('/orders', async (req, res) => {
     try {
-        const { userId, items, total, voucherCode, tableId } = req.body;
+        const { userId, customerName, customerPhone, items, total, voucherCode, tableId, deliveryType, deliveryAddress } = req.body;
         
         // Kiểm tra voucher nếu có
         let discount = 0;
@@ -27,7 +59,9 @@ router.post('/orders', async (req, res) => {
         
         // Tạo đơn hàng
         const orderRef = await db.collection('orders').add({
-            userId,
+            userId: userId || null, // Customer không cần đăng nhập
+            customerName: customerName || null,
+            customerPhone: customerPhone || null,
             items,
             total,
             discount,
@@ -35,6 +69,9 @@ router.post('/orders', async (req, res) => {
             status: 'pending',
             voucherCode: voucherCode || null,
             tableId: tableId || null,
+            deliveryType: deliveryType || 'at-table', // at-table, takeaway, delivery
+            deliveryAddress: deliveryAddress || null,
+            paymentStatus: 'pending',
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
@@ -172,9 +209,14 @@ router.get('/vouchers/:code', async (req, res) => {
 // Lấy thực đơn
 router.get('/menu', async (req, res) => {
     try {
-        const menu = await db.collection('menu')
-            .where('isActive', '==', true)
-            .get();
+        const { category } = req.query;
+        let menuQuery = db.collection('menu').where('isActive', '==', true);
+        
+        if (category) {
+            menuQuery = menuQuery.where('category', '==', category);
+        }
+        
+        const menu = await menuQuery.get();
         
         const menuList = menu.docs.map(doc => ({
             id: doc.id,
@@ -182,6 +224,107 @@ router.get('/menu', async (req, res) => {
         }));
         
         res.json({ success: true, menu: menuList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lấy danh mục món ăn
+router.get('/menu/categories', async (req, res) => {
+    try {
+        const menu = await db.collection('menu')
+            .where('isActive', '==', true)
+            .get();
+        
+        const categories = [...new Set(menu.docs.map(doc => doc.data().category).filter(Boolean))];
+        
+        res.json({ success: true, categories });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lấy combo
+router.get('/combos', async (req, res) => {
+    try {
+        const combos = await db.collection('combos')
+            .where('isActive', '==', true)
+            .get();
+        
+        const combosList = combos.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, combos: combosList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lấy voucher có thể sử dụng
+router.get('/vouchers/available', async (req, res) => {
+    try {
+        const now = new Date();
+        const vouchers = await db.collection('vouchers')
+            .where('isActive', '==', true)
+            .where('expiryDate', '>=', now)
+            .get();
+        
+        const vouchersList = vouchers.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, vouchers: vouchersList });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Thanh toán đơn hàng
+router.post('/orders/:orderId/payment', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { paymentMethod, paymentInfo } = req.body; // paymentMethod: 'vnpay', 'momo', 'paypal', 'cash'
+        
+        await db.collection('orders').doc(orderId).update({
+            paymentStatus: 'paid',
+            paymentMethod,
+            paymentInfo,
+            paidAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Ghi log thanh toán
+        await db.collection('payment_logs').add({
+            orderId,
+            paymentMethod,
+            paymentInfo,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lấy lịch sử tích điểm
+router.get('/points/history/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const history = await db.collection('points_history')
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        const historyList = history.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        res.json({ success: true, history: historyList });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });
     }
