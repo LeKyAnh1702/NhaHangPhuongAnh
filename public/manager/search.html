@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm Kiếm - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Tìm Kiếm</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="search-section">
+            <h2>Tìm Kiếm</h2>
+            
+            <div class="search-container">
+                <div class="search-tabs">
+                    <button class="tab-btn active" onclick="switchSearchTab('orders')">Đơn Hàng</button>
+                    <button class="tab-btn" onclick="switchSearchTab('customers')">Khách Hàng</button>
+                    <button class="tab-btn" onclick="switchSearchTab('menu')">Món Ăn</button>
+                </div>
+                
+                <div class="search-bar" style="margin: 20px 0;">
+                    <input type="text" id="globalSearchInput" placeholder="Nhập từ khóa tìm kiếm...">
+                    <button class="btn-primary" onclick="performSearch()">Tìm Kiếm</button>
+                </div>
+                
+                <div id="searchResults" class="search-results">
+                    <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="manager.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

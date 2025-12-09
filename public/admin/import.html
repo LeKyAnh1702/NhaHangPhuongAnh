@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Kho - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Nhập Kho</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+                <li><a href="/admin/import">Nhập Kho</a></li>
+                <li><a href="/admin/export">Xuất Kho</a></li>
+                <li><a href="/admin/inventory-balance">Tồn Kho</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="import-section">
+            <h2>Quản Lý Nhập Kho</h2>
+            
+            <div class="action-buttons" style="margin-bottom: 24px;">
+                <button class="btn-primary" onclick="showImportModal()">Tạo Phiếu Nhập Kho</button>
+                <button class="btn-secondary" onclick="window.location.href='/admin/export'">Xuất Kho</button>
+                <button class="btn-secondary" onclick="window.location.href='/admin/inventory-balance'">Tồn Kho</button>
+            </div>
+            
+            <!-- Tìm kiếm phiếu nhập kho -->
+            <div class="import-search-container">
+                <h4>Tìm Kiếm Phiếu Nhập Kho</h4>
+                <div class="search-filters">
+                    <div class="form-group">
+                        <label>Từ ngày:</label>
+                        <input type="date" id="searchImportFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Đến ngày:</label>
+                        <input type="date" id="searchImportToDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Số chứng từ:</label>
+                        <input type="text" id="searchImportDocNumber" placeholder="Nhập số chứng từ">
+                    </div>
+                    <button class="btn-primary" onclick="searchImportReceipts()">Tìm Kiếm</button>
+                    <button class="btn-secondary" onclick="resetImportSearch()">Xóa Bộ Lọc</button>
+                </div>
+            </div>
+            
+            <!-- Danh sách phiếu nhập kho -->
+            <div class="import-receipts-container">
+                <h4>Danh Sách Phiếu Nhập Kho</h4>
+                <table class="import-receipts-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Số Chứng Từ</th>
+                            <th>Ngày Nhập</th>
+                            <th>Nhà Cung Cấp</th>
+                            <th>Số Loại NVL</th>
+                            <th>Tổng Tiền</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="importReceiptsTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content import-modal-content">
+            <span class="close" onclick="closeImportModal()">&times;</span>
+            <h2>Phiếu Nhập Kho</h2>
+            <form id="importForm">
+                <div class="import-form-header">
+                    <div class="form-group">
+                        <label>Số chứng từ *</label>
+                        <input type="text" id="importDocNumber" placeholder="Tự động tạo (YYYYMM-001)" readonly>
+                        <small style="color: #666;">Số chứng từ sẽ được tự động tạo</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày nhập kho *</label>
+                        <input type="date" id="importDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Người bán (Nhà cung cấp) *</label>
+                    <div class="supplier-search-container">
+                        <input type="text" id="supplierSearch" placeholder="Tìm kiếm theo tên nhà cung cấp..." 
+                               onkeyup="filterSuppliers()" autocomplete="off">
+                        <div id="supplierDropdown" class="supplier-dropdown"></div>
+                    </div>
+                    <input type="hidden" id="selectedSupplierId">
+                    <div id="selectedSupplierInfo" class="selected-supplier-info" style="display: none;">
+                        <p><strong>Đã chọn:</strong> <span id="selectedSupplierName"></span> (Mã: <span id="selectedSupplierCode"></span>)</p>
+                        <button type="button" class="btn-link" onclick="clearSupplierSelection()">Chọn lại</button>
+                    </div>
+                    <button type="button" class="btn-link" onclick="window.location.href='/admin/suppliers'">Thêm nhà cung cấp mới</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Danh sách nguyên vật liệu nhập kho *</label>
+                    <button type="button" class="btn-secondary" onclick="addImportItem()">+ Thêm nguyên vật liệu</button>
+                    <button type="button" class="btn-link" onclick="window.location.href='/admin/materials'">Thêm nguyên vật liệu mới</button>
+                    <table class="import-items-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Số</th>
+                                <th>Tên Nguyên Vật Liệu</th>
+                                <th>Đơn Vị Tính</th>
+                                <th>Số Lượng</th>
+                                <th>Đơn Giá</th>
+                                <th>Thành Tiền</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="importItemsTableBody">
+                            <!-- Các dòng nguyên vật liệu sẽ được thêm ở đây -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="6" style="text-align: right; font-weight: bold;">Tổng tiền:</td>
+                                <td id="importTotalAmount" style="font-weight: bold; font-size: 1.1em;">0</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="printImportReceipt()">In Phiếu Nhập Kho</button>
+                    <button type="submit" class="btn-primary">Lưu Phiếu Nhập Kho</button>
+                    <button type="button" class="btn-secondary" onclick="closeImportModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Print Modal for Import Receipt -->
+    <div id="printImportModal" class="modal print-modal">
+        <div class="modal-content print-content">
+            <div class="print-header">
+                <button class="btn-primary" onclick="window.print()">In</button>
+                <button class="btn-secondary" onclick="closePrintImportModal()">Đóng</button>
+            </div>
+            <div id="printImportContent" class="print-import-content">
+                <!-- Nội dung in sẽ được render ở đây -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

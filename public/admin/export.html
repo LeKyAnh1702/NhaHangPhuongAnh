@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xuất Kho - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Xuất Kho</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+                <li><a href="/admin/import">Nhập Kho</a></li>
+                <li><a href="/admin/export">Xuất Kho</a></li>
+                <li><a href="/admin/inventory-balance">Tồn Kho</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="export-section">
+            <h2>Quản Lý Xuất Kho</h2>
+            
+            <div class="action-buttons" style="margin-bottom: 24px;">
+                <button class="btn-secondary" onclick="window.location.href='/admin/import'">Nhập Kho</button>
+                <button class="btn-primary" onclick="showExportModal()">Tạo Phiếu Xuất Kho</button>
+                <button class="btn-secondary" onclick="window.location.href='/admin/inventory-balance'">Tồn Kho</button>
+            </div>
+            
+            <!-- Tìm kiếm phiếu xuất kho -->
+            <div class="export-search-container">
+                <h4>Tìm Kiếm Phiếu Xuất Kho</h4>
+                <div class="search-filters">
+                    <div class="form-group">
+                        <label>Từ ngày:</label>
+                        <input type="date" id="searchExportFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Đến ngày:</label>
+                        <input type="date" id="searchExportToDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Số chứng từ:</label>
+                        <input type="text" id="searchExportDocNumber" placeholder="Nhập số chứng từ">
+                    </div>
+                    <button class="btn-primary" onclick="searchExportReceipts()">Tìm Kiếm</button>
+                    <button class="btn-secondary" onclick="resetExportSearch()">Xóa Bộ Lọc</button>
+                </div>
+            </div>
+            
+            <!-- Danh sách phiếu xuất kho -->
+            <div class="export-receipts-container">
+                <h4>Danh Sách Phiếu Xuất Kho</h4>
+                <table class="export-receipts-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Số Chứng Từ</th>
+                            <th>Ngày Xuất</th>
+                            <th>Số Loại NVL</th>
+                            <th>Tổng Tiền</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exportReceiptsTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content import-modal-content">
+            <span class="close" onclick="closeExportModal()">&times;</span>
+            <h2>Phiếu Xuất Kho</h2>
+            <form id="exportForm">
+                <div class="import-form-header">
+                    <div class="form-group">
+                        <label>Số chứng từ *</label>
+                        <input type="text" id="exportDocNumber" placeholder="Tự động tạo (XKYYYYMM-001)" readonly>
+                        <small style="color: #666;">Số chứng từ sẽ được tự động tạo</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày xuất kho *</label>
+                        <input type="date" id="exportDate" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Danh sách nguyên vật liệu xuất kho *</label>
+                    <button type="button" class="btn-secondary" onclick="addExportItem()">+ Thêm nguyên vật liệu</button>
+                    <button type="button" class="btn-link" onclick="window.location.href='/admin/materials'">Thêm nguyên vật liệu mới</button>
+                    <table class="import-items-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Số</th>
+                                <th>Tên Nguyên Vật Liệu</th>
+                                <th>Đơn Vị Tính</th>
+                                <th>Số Lượng</th>
+                                <th>Đơn Giá</th>
+                                <th>Thành Tiền</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exportItemsTableBody">
+                            <!-- Các dòng nguyên vật liệu sẽ được thêm ở đây -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="6" style="text-align: right; font-weight: bold;">Tổng tiền:</td>
+                                <td id="exportTotalAmount" style="font-weight: bold; font-size: 1.1em;">0</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="printExportReceipt()">In Phiếu Xuất Kho</button>
+                    <button type="submit" class="btn-primary">Lưu Phiếu Xuất Kho</button>
+                    <button type="button" class="btn-secondary" onclick="closeExportModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Print Modal for Export Receipt -->
+    <div id="printExportModal" class="modal print-modal">
+        <div class="modal-content print-content">
+            <div class="print-header">
+                <button class="btn-primary" onclick="window.print()">In</button>
+                <button class="btn-secondary" onclick="closePrintExportModal()">Đóng</button>
+            </div>
+            <div id="printExportContent" class="print-import-content">
+                <!-- Nội dung in sẽ được render ở đây -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

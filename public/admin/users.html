@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Người Dùng - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Người Dùng</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="users-section">
+            <h2>Quản Lý Người Dùng</h2>
+            <button class="btn-primary" onclick="showUserModal()">Thêm Người Dùng Mới</button>
+            
+            <!-- Form nhập liệu người dùng -->
+            <div class="user-form-container">
+                <h3>Thêm Người Dùng Mới</h3>
+                <form id="userForm" class="user-form">
+                    <div class="form-group">
+                        <label>Họ và tên *</label>
+                        <input type="text" id="userName" placeholder="Nhập họ và tên" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="userEmail" placeholder="Nhập email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Chức vụ *</label>
+                        <select id="userRole" required>
+                            <option value="">-- Chọn chức vụ --</option>
+                            <option value="customer">Khách hàng</option>
+                            <option value="manager">Quản lý</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="tel" id="userPhone" placeholder="Nhập số điện thoại">
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu *</label>
+                        <input type="password" id="userPassword" placeholder="Nhập mật khẩu" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Thêm Người Dùng</button>
+                </form>
+            </div>
+            
+            <!-- Danh sách người dùng -->
+            <div class="users-table-container">
+                <h3>Danh Sách Người Dùng</h3>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Họ và Tên</th>
+                            <th>Chức Vụ</th>
+                            <th>Email</th>
+                            <th>Số Điện Thoại</th>
+                            <th>Trạng Thái</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

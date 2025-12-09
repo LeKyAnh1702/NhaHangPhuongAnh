@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thực Đơn - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+    <style>
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #8d5524;
+            border-bottom-color: #8d5524;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .menu-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .menu-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .menu-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .menu-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .menu-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .menu-table th:last-child {
+            width: 150px;
+            text-align: center;
+        }
+        .menu-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        .menu-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .menu-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .menu-table td:last-child {
+            text-align: center;
+        }
+        .menu-form {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .combo-items-list {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .combo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .combo-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .customer-search-container {
+            position: relative;
+        }
+        .customer-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 2000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .customer-autocomplete-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .customer-autocomplete-item:hover {
+            background-color: #f5f5f5;
+        }
+        .customer-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        #editComboModal.modal {
+            overflow-y: auto;
+            display: none;
+            align-items: flex-start;
+            padding: 20px 0;
+        }
+        #editComboModal.modal.show {
+            display: flex;
+        }
+        #editComboModal .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            margin: auto;
+        }
+        #editComboModal .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: flex-end;
+            padding: 15px 0;
+        }
+        .btn-primary {
+            padding: 10px 20px;
+            background: #8d5524;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background: #6d3f1a;
+        }
+        .btn-secondary {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Thực Đơn</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="menu-section">
+            <h2>Quản Lý Thực Đơn</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchMenuTab('items')">Món Lẻ</button>
+                <button class="tab" onclick="switchMenuTab('combos')">Combo</button>
+            </div>
+            
+            <!-- Tab 1: Món Lẻ -->
+            <div id="tab-items" class="tab-content active">
+                <div class="menu-form">
+                    <h3>Thêm Món Ăn Mới</h3>
+                    <form id="menuItemForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mã số món *</label>
+                                <input type="text" id="menuItemCode" placeholder="Tự động tạo (MONxxxx)" readonly>
+                                <small style="color: #666;">Mã số sẽ được tự động tạo khi lưu</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Tên món *</label>
+                                <input type="text" id="menuItemName" placeholder="Nhập tên món" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Đơn vị tính *</label>
+                                <input type="text" id="menuItemUnit" placeholder="Ví dụ: Phần, Đĩa, Bát" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Quy cách *</label>
+                                <input type="text" id="menuItemPackaging" placeholder="Ví dụ: 1 phần, 500g" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Đơn giá *</label>
+                            <input type="number" id="menuItemPrice" placeholder="Nhập đơn giá" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Thêm Món</button>
+                            <button type="button" class="btn-secondary" onclick="resetMenuItemForm()">Làm Mới</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="menu-table-container">
+                    <table class="menu-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Số Món</th>
+                                <th>Tên Món</th>
+                                <th>Đơn Vị Tính</th>
+                                <th>Quy Cách</th>
+                                <th>Đơn Giá</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menuItemsTableBody">
+                            <!-- Danh sách sẽ được load ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Combo -->
+            <div id="tab-combos" class="tab-content">
+                <div class="menu-form">
+                    <h3>Thêm Combo Mới</h3>
+                    <form id="comboForm">
+                        <div class="form-group">
+                            <label>Tên combo *</label>
+                            <input type="text" id="comboName" placeholder="Nhập tên combo" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Chọn món trong combo *</label>
+                            <div class="customer-search-container">
+                                <input type="text" 
+                                       id="comboMenuSearch" 
+                                       placeholder="Nhập mã số hoặc tên món để tìm kiếm..." 
+                                       autocomplete="off"
+                                       onkeyup="searchMenuItemsForCombo(event)"
+                                       onfocus="showMenuItemsAutocomplete()">
+                                <div id="comboMenuAutocomplete" class="customer-dropdown"></div>
+                            </div>
+                            <div id="comboSelectedItems" class="combo-items-list">
+                                <p style="color: #666; text-align: center; padding: 20px;">Chưa có món nào được chọn</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Giá combo *</label>
+                            <input type="number" id="comboPrice" placeholder="Nhập giá combo" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Thêm Combo</button>
+                            <button type="button" class="btn-secondary" onclick="resetComboForm()">Làm Mới</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="menu-table-container">
+                    <table class="menu-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên Combo</th>
+                                <th>Danh Sách Món</th>
+                                <th>Giá Combo</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="combosTableBody">
+                            <!-- Danh sách sẽ được load ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Menu Item Modal -->
+    <div id="editMenuItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditMenuItemModal()">&times;</span>
+            <h2>Sửa Món Lẻ</h2>
+            <form id="editMenuItemForm">
+                <input type="hidden" id="editMenuItemId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mã số món</label>
+                        <input type="text" id="editMenuItemCode" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Tên món *</label>
+                        <input type="text" id="editMenuItemName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Đơn vị tính *</label>
+                        <input type="text" id="editMenuItemUnit" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quy cách *</label>
+                        <input type="text" id="editMenuItemPackaging" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Đơn giá *</label>
+                    <input type="number" id="editMenuItemPrice" step="0.01" min="0" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Cập Nhật</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditMenuItemModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Combo Modal -->
+    <div id="editComboModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close" onclick="closeEditComboModal()">&times;</span>
+            <h2>Sửa Combo</h2>
+            <form id="editComboForm">
+                <input type="hidden" id="editComboId">
+                <div class="form-group">
+                    <label>Tên combo *</label>
+                    <input type="text" id="editComboName" required>
+                </div>
+                <div class="form-group">
+                    <label>Thêm món vào combo</label>
+                    <div class="customer-search-container">
+                        <input type="text" 
+                               id="editComboMenuSearch" 
+                               placeholder="Nhập mã số hoặc tên món để tìm kiếm..." 
+                               autocomplete="off"
+                               onkeyup="searchMenuItemsForEditCombo(event)"
+                               onfocus="showMenuItemsAutocompleteForEdit()">
+                        <div id="editComboMenuAutocomplete" class="customer-dropdown"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Danh sách món trong combo</label>
+                    <div id="editComboItems" class="combo-items-list">
+                        <!-- Sẽ được load từ API -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Giá combo *</label>
+                    <input type="number" id="editComboPrice" step="0.01" min="0" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Cập Nhật</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditComboModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="manager.js"></script>
+    <script src="menu-manager.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>

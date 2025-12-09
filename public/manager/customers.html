@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Khách Hàng - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+    <style>
+        .customer-form-container {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        .form-group small {
+            color: #666;
+            font-size: 12px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #8d5524;
+            border-bottom-color: #8d5524;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .customers-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .customers-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        .customers-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .customers-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .customers-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .customers-table th:nth-child(2) {
+            width: 100px;
+        }
+        .customers-table th:nth-child(3) {
+            width: 150px;
+        }
+        .customers-table th:nth-child(4) {
+            width: 130px;
+        }
+        .customers-table th:nth-child(5) {
+            width: 200px;
+        }
+        .customers-table th:nth-child(6) {
+            width: 120px;
+        }
+        .customers-table th:nth-child(7) {
+            width: 150px;
+        }
+        .customers-table th:nth-child(8),
+        .customers-table th:nth-child(9) {
+            width: 130px;
+            text-align: right;
+        }
+        .customers-table th:last-child {
+            width: 120px;
+            text-align: center;
+        }
+        .customers-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+        }
+        .customers-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .customers-table td {
+            padding: 12px;
+            font-size: 14px;
+            color: #333;
+        }
+        .customers-table td:first-child {
+            text-align: center;
+            font-weight: 500;
+        }
+        .customers-table td:nth-child(2) {
+            font-weight: 600;
+            color: #8d5524;
+        }
+        .customers-table td:nth-child(8),
+        .customers-table td:nth-child(9) {
+            text-align: right;
+            font-weight: 500;
+        }
+        .customers-table td:last-child {
+            text-align: center;
+        }
+        .btn-edit, .btn-delete {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin: 0 4px;
+            transition: all 0.2s;
+        }
+        .btn-edit {
+            background: #007bff;
+            color: white;
+        }
+        .btn-edit:hover {
+            background: #0056b3;
+        }
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        .edit-customer-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .edit-customer-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .close-edit-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-edit-modal:hover,
+        .close-edit-modal:focus {
+            color: #000;
+        }
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #8d5524;
+            box-shadow: 0 0 0 2px rgba(141, 85, 36, 0.1);
+        }
+        .btn-secondary {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .debt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .debt-table thead {
+            background: #f8f9fa;
+        }
+        .debt-table th,
+        .debt-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .debt-table th {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+        .debt-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .debt-filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: #8d5524;
+            box-shadow: 0 0 0 2px rgba(141, 85, 36, 0.1);
+        }
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .debt-summary-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .debt-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        .debt-summary-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .debt-summary-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .debt-summary-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .debt-summary-table th:nth-child(2) {
+            width: 120px;
+        }
+        .debt-summary-table th:nth-child(3) {
+            width: 200px;
+        }
+        .debt-summary-table th:nth-child(4),
+        .debt-summary-table th:nth-child(5),
+        .debt-summary-table th:nth-child(6),
+        .debt-summary-table th:nth-child(7) {
+            width: 150px;
+            text-align: right;
+        }
+        .debt-summary-table th:last-child {
+            width: 120px;
+            text-align: center;
+        }
+        .debt-summary-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .debt-summary-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .debt-summary-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        .debt-summary-table td:first-child {
+            text-align: center;
+        }
+        .debt-summary-table td:nth-child(4),
+        .debt-summary-table td:nth-child(5),
+        .debt-summary-table td:nth-child(6),
+        .debt-summary-table td:nth-child(7) {
+            text-align: right;
+            font-weight: 500;
+        }
+        .debt-summary-table td:last-child {
+            text-align: center;
+        }
+        .debt-summary-table tfoot {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .debt-summary-table tfoot td {
+            padding: 14px 12px;
+        }
+        .debt-summary-table tfoot td:first-child {
+            text-align: center;
+        }
+        .debt-summary-table tfoot td:nth-child(4),
+        .debt-summary-table tfoot td:nth-child(5),
+        .debt-summary-table tfoot td:nth-child(6),
+        .debt-summary-table tfoot td:nth-child(7) {
+            text-align: right;
+        }
+        .debt-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #8d5524;
+        }
+        .debt-detail-info p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .debt-detail-balance {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin: 16px 0;
+            font-size: 16px;
+        }
+        .debt-detail-balance.closing {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        .debt-detail-table-container {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .debt-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .debt-detail-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .debt-detail-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .debt-detail-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .debt-detail-table th:nth-child(3),
+        .debt-detail-table th:nth-child(4),
+        .debt-detail-table th:nth-child(5) {
+            text-align: right;
+        }
+        .debt-detail-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .debt-detail-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .debt-detail-table td {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        .debt-detail-table td:first-child {
+            text-align: center;
+        }
+        .debt-detail-table td:nth-child(3),
+        .debt-detail-table td:nth-child(4),
+        .debt-detail-table td:nth-child(5) {
+            text-align: right;
+        }
+        @media print {
+            .debt-filter-section,
+            .filter-actions,
+            .debt-summary-table th:last-child,
+            .debt-summary-table td:last-child {
+                display: none;
+            }
+            .debt-summary-table-container,
+            .debt-detail-table-container {
+                box-shadow: none;
+            }
+        }
+        .balance-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .balance-input-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        .balance-input-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .balance-input-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .balance-input-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .balance-input-table th:nth-child(2) {
+            width: 150px;
+        }
+        .balance-input-table th:nth-child(3) {
+            width: 200px;
+        }
+        .balance-input-table th:nth-child(4) {
+            width: 250px;
+        }
+        .balance-input-table th:nth-child(5) {
+            width: 180px;
+        }
+        .balance-input-table th:last-child {
+            width: 120px;
+            text-align: center;
+        }
+        .balance-input-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .balance-input-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .balance-input-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        .balance-input-table td:first-child {
+            text-align: center;
+            font-weight: 500;
+        }
+        .balance-input-table td:last-child {
+            text-align: center;
+        }
+        .balance-input-table input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .balance-input-table input:focus {
+            outline: none;
+            border-color: #8d5524;
+            box-shadow: 0 0 0 2px rgba(141, 85, 36, 0.1);
+        }
+        .balance-input-table input[readonly] {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+        .customer-search-wrapper {
+            position: relative;
+        }
+        .customer-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .customer-autocomplete-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .customer-autocomplete-item:hover {
+            background-color: #f5f5f5;
+        }
+        .customer-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Khách Hàng</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="customers-section">
+            <h2>Quản Lý Khách Hàng</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('list')">Danh Sách Khách Hàng</button>
+                <button class="tab" onclick="switchTab('add')">Thêm Khách Hàng</button>
+                <button class="tab" onclick="switchTab('debt')">Đối Chiếu Công Nợ</button>
+                <button class="tab" onclick="switchTab('balance')">Nhập Số Dư Đầu Kỳ</button>
+            </div>
+            
+            <!-- Tab 1: Danh Sách Khách Hàng -->
+            <div id="tab-list" class="tab-content active">
+                <div class="search-bar" style="margin-bottom: 20px;">
+                    <input type="text" id="searchCustomerInput" placeholder="Tìm kiếm khách hàng theo mã số, tên, CCCD, số điện thoại...">
+                    <button class="btn-primary" onclick="searchCustomers()">Tìm Kiếm</button>
+                    <button class="btn-secondary" onclick="resetCustomerSearch()">Xóa Bộ Lọc</button>
+                </div>
+                
+                <div class="customers-table-container">
+                    <table class="customers-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Số KH</th>
+                                <th>Họ và Tên</th>
+                                <th>CCCD</th>
+                                <th>Địa Chỉ</th>
+                                <th>Số Điện Thoại</th>
+                                <th>Công Ty/Đơn Vị</th>
+                                <th>Số Dư Đầu Kỳ</th>
+                                <th>Công Nợ</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody">
+                            <!-- Danh sách sẽ được load ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Thêm Khách Hàng -->
+            <div id="tab-add" class="tab-content">
+                <div class="customer-form-container">
+                    <h3>Thêm Khách Hàng Mới</h3>
+                    <form id="customerForm" class="customer-form">
+                        <div class="form-group">
+                            <label>Mã số khách hàng *</label>
+                            <input type="text" id="customerCode" placeholder="Tự động tạo (NMU0001)" readonly>
+                            <small>Mã số sẽ được tự động tạo khi lưu</small>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Họ và tên *</label>
+                                <input type="text" id="customerName" placeholder="Nhập họ và tên" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Căn cước công dân *</label>
+                                <input type="text" id="customerIdCard" placeholder="Nhập số CCCD" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Địa chỉ *</label>
+                            <textarea id="customerAddress" placeholder="Nhập địa chỉ" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Số điện thoại *</label>
+                                <input type="tel" id="customerPhone" placeholder="Nhập số điện thoại" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Tên công ty, đơn vị</label>
+                                <input type="text" id="customerCompany" placeholder="Nhập tên công ty (không bắt buộc)">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Thêm Khách Hàng</button>
+                            <button type="button" class="btn-secondary" onclick="resetCustomerForm()">Làm Mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tab 3: Đối Chiếu Công Nợ -->
+            <div id="tab-debt" class="tab-content">
+                <div class="customer-form-container">
+                    <h3>Đối Chiếu Công Nợ Khách Hàng</h3>
+                    
+                    <!-- Filter Section -->
+                    <div class="debt-filter-section">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>Từ ngày:</label>
+                                <input type="date" id="debtFromDate" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label>Đến ngày:</label>
+                                <input type="date" id="debtToDate" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label>Mã số KH:</label>
+                                <input type="text" id="debtCustomerCodeFilter" class="filter-input" placeholder="Nhập mã số KH">
+                            </div>
+                            <div class="filter-group">
+                                <label>Họ và tên:</label>
+                                <input type="text" id="debtCustomerNameFilter" class="filter-input" placeholder="Nhập họ tên">
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button type="button" class="btn-primary" onclick="loadDebtSummary()">Tìm Kiếm</button>
+                            <button type="button" class="btn-secondary" onclick="resetDebtFilter()">Xóa Bộ Lọc</button>
+                            <button type="button" class="btn-primary" onclick="printDebtSummary()">In Bảng Tổng Hợp</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Debt Summary Table -->
+                    <div class="debt-summary-table-container">
+                        <table class="debt-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Số KH</th>
+                                    <th>Họ Tên KH</th>
+                                    <th>Số Dư Đầu Kỳ</th>
+                                    <th>Phát Sinh Nợ Trong Kỳ</th>
+                                    <th>Đã Trả</th>
+                                    <th>Còn Nợ</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="debtSummaryTableBody">
+                                <!-- Sẽ được load từ API -->
+                            </tbody>
+                            <tfoot id="debtSummaryTableFoot">
+                                <!-- Tổng cộng sẽ được thêm ở đây -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Chi Tiết Công Nợ -->
+            <div id="debtDetailModal" class="modal">
+                <div class="modal-content" style="max-width: 900px;">
+                    <span class="close" onclick="closeDebtDetailModal()">&times;</span>
+                    <h2 id="debtDetailModalTitle">Chi Tiết Công Nợ</h2>
+                    
+                    <div class="debt-detail-header">
+                        <div class="debt-detail-info">
+                            <p><strong>Khách hàng:</strong> <span id="debtDetailCustomerName"></span></p>
+                            <p><strong>Mã số KH:</strong> <span id="debtDetailCustomerCode"></span></p>
+                            <p><strong>Kỳ:</strong> <span id="debtDetailPeriod"></span></p>
+                        </div>
+                        <div class="debt-detail-actions">
+                            <button type="button" class="btn-primary" onclick="printDebtDetail()">In Chi Tiết</button>
+                        </div>
+                    </div>
+                    
+                    <div class="debt-detail-balance">
+                        <p><strong>Số dư nợ đầu kỳ:</strong> <span id="debtDetailOpeningDebt"></span> VNĐ</p>
+                    </div>
+                    
+                    <div class="debt-detail-table-container">
+                        <table class="debt-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Số Chứng Từ</th>
+                                    <th>Ngày Tháng</th>
+                                    <th>Phát Sinh Nợ Trong Kỳ</th>
+                                    <th>Đã Trả</th>
+                                </tr>
+                            </thead>
+                            <tbody id="debtDetailTableBody">
+                                <!-- Chi tiết sẽ được load ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="debt-detail-balance closing">
+                        <p><strong>Số dư nợ cuối kỳ:</strong> <span id="debtDetailClosingDebt"></span> VNĐ</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 4: Nhập Số Dư Đầu Kỳ -->
+            <div id="tab-balance" class="tab-content">
+                <div class="customer-form-container">
+                    <h3>Nhập Số Dư Đầu Kỳ Khách Hàng</h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <button type="button" class="btn-primary" onclick="addBalanceRow()">+ Thêm Dòng</button>
+                        <button type="button" class="btn-secondary" onclick="saveAllOpeningBalances()" style="margin-left: 10px;">Lưu Tất Cả</button>
+                        <button type="button" class="btn-secondary" onclick="clearBalanceTable()" style="margin-left: 10px;">Xóa Tất Cả</button>
+                    </div>
+                    
+                    <div class="balance-table-container">
+                        <table class="balance-input-table balance-row-counter">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Số KH</th>
+                                    <th>Họ Tên KH</th>
+                                    <th>Địa Chỉ</th>
+                                    <th>Nhập Số Dư Đầu Kỳ</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="balanceInputTableBody">
+                                <!-- Các dòng sẽ được thêm ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Sửa Khách Hàng -->
+    <div id="editCustomerModal" class="edit-customer-modal">
+        <div class="edit-customer-modal-content">
+            <span class="close-edit-modal" onclick="closeEditCustomerModal()">&times;</span>
+            <h2 style="color: #8d5524; margin-top: 0;">Sửa Thông Tin Khách Hàng</h2>
+            <form id="editCustomerForm" class="customer-form">
+                <input type="hidden" id="editCustomerId">
+                
+                <div class="form-group">
+                    <label for="editCustomerCode">Mã số KH</label>
+                    <input type="text" id="editCustomerCode" readonly style="background: #f5f5f5;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerName">Họ và tên *</label>
+                    <input type="text" id="editCustomerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerIdCard">Căn cước công dân *</label>
+                    <input type="text" id="editCustomerIdCard" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerAddress">Địa chỉ *</label>
+                    <textarea id="editCustomerAddress" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerPhone">Số điện thoại *</label>
+                    <input type="tel" id="editCustomerPhone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerCompany">Tên công ty, đơn vị</label>
+                    <input type="text" id="editCustomerCompany">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Lưu Thay Đổi</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditCustomerModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="manager.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>

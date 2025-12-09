@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Đơn Hàng - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+    <style>
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #8d5524;
+            border-bottom-color: #8d5524;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .orders-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 70vh;
+            position: relative;
+        }
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        /* Đảm bảo bảng trong phần Thanh Toán có thể cuộn */
+        #tab-payment .orders-table-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+        }
+        .orders-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .orders-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .orders-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .orders-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        .orders-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .orders-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .order-form {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .order-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        .order-items-table th,
+        .order-items-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+        .order-items-table thead {
+            background: #8d5524;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .order-items-table thead th {
+            font-weight: 600;
+            text-align: center;
+        }
+        .order-items-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .order-items-table tfoot {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .order-items-table tfoot td {
+            border-top: 2px solid #8d5524;
+        }
+        .customer-search-container {
+            position: relative;
+        }
+        .customer-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .customer-dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .customer-dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+        .selected-customer-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f7ff;
+            border-radius: 4px;
+        }
+        .btn-link {
+            background: none;
+            border: none;
+            color: #8d5524;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .filter-bar select,
+        .filter-bar input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .create-order-top-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .create-order-form-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .create-order-items-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .create-order-items-section h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #8d5524;
+        }
+        .order-items-table-container {
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .create-order-menu-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 300px);
+        }
+        .create-order-menu-section h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #8d5524;
+        }
+        .menu-search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .menu-search-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .menu-search-bar button {
+            padding: 10px 20px;
+            background: #8d5524;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .menu-tabs-create {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .menu-tabs-create button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .menu-tabs-create button.active {
+            background: #8d5524;
+            color: white;
+            border-color: #8d5524;
+        }
+        .menu-tabs-create button:hover {
+            background: #f0f0f0;
+        }
+        .menu-tabs-create button.active:hover {
+            background: #6d3f1a;
+        }
+        .menu-list-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .menu-item-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu-item-card:hover {
+            background: #e9ecef;
+            border-color: #8d5524;
+        }
+        .menu-item-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .menu-item-info p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .menu-item-price {
+            font-weight: bold;
+            color: #8d5524;
+            margin-right: 10px;
+        }
+        .btn-add-item {
+            padding: 8px 16px;
+            background: #8d5524;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-add-item:hover {
+            background: #6d3f1a;
+        }
+        .order-items-table input[type="text"],
+        .order-items-table input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .order-items-table td {
+            padding: 8px;
+        }
+        .btn-delete-item {
+            padding: 5px 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-delete-item:hover {
+            background: #c82333;
+        }
+        /* Modal styles for Phát Sinh Nợ and Thanh Toán */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-primary, .btn-secondary {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #8d5524;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #6d3f1a;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Đơn Hàng</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="orders-section">
+            <h2>Quản Lý Đơn Hàng</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchOrderTab('confirm')">Xác Nhận Đơn Hàng</button>
+                <button class="tab" onclick="switchOrderTab('create')">Tạo Đơn Hàng</button>
+                <button class="tab" onclick="switchOrderTab('update')">Cập Nhật Đơn Hàng</button>
+                <button class="tab" onclick="switchOrderTab('payment')">Thanh Toán</button>
+            </div>
+            
+            <!-- Tab 1: Xác Nhận Đơn Hàng -->
+            <div id="tab-confirm" class="tab-content active" data-loaded="false">
+                <div class="filter-bar">
+                    <select id="orderStatusFilter">
+                        <option value="pending">Chờ xác nhận</option>
+                        <option value="all">Tất cả</option>
+                    </select>
+                    <input type="date" id="orderDateFilter">
+                    <button class="btn-primary" onclick="loadPendingOrders()">Làm Mới</button>
+                </div>
+                
+                <div class="orders-table-container">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Khách Hàng</th>
+                                <th>SĐT</th>
+                                <th>Số Lượng Người</th>
+                                <th>Thời Gian Ăn</th>
+                                <th>Chi Tiết</th>
+                                <th>Hình thức</th>
+                                <th>Thimage.pngao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingOrdersTableBody">
+                            <!-- Danh sách sẽ được load ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Tạo Đơn Hàng -->
+            <div id="tab-create" class="tab-content">
+                <div class="create-order-top-section">
+                    <!-- Cột trái: Form tạo đơn hàng -->
+                    <div class="create-order-form-section">
+                        <h3>Tạo Đơn Hàng Mới</h3>
+                        
+                        <form id="createOrderForm">
+                            <div class="form-group">
+                                <label>Khách hàng *</label>
+                                <div class="customer-search-container">
+                                    <input type="text" id="customerSearch" placeholder="Nhập tên hoặc số điện thoại..." 
+                                           onkeyup="filterCustomersForOrder()" autocomplete="off">
+                                    <div id="customerDropdown" class="customer-dropdown"></div>
+                                </div>
+                                <input type="hidden" id="selectedCustomerId">
+                                <input type="text" id="customerNameInput" placeholder="Tên khách hàng" style="margin-top: 10px; display: none;">
+                                <input type="text" id="customerPhoneInput" placeholder="Số điện thoại" style="margin-top: 10px; display: none;">
+                                <div id="selectedCustomerInfo" class="selected-customer-info" style="display: none;">
+                                    <p><strong>Đã chọn:</strong> <span id="selectedCustomerName"></span> - <span id="selectedCustomerPhone"></span></p>
+                                    <button type="button" class="btn-link" onclick="clearCustomerSelection()">Chọn lại</button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Số lượng người *</label>
+                                <input type="number" id="numberOfPeople" placeholder="Nhập số lượng người" min="1" value="1" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Thời gian ăn *</label>
+                                <input type="datetime-local" id="eatingTime" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Số bàn</label>
+                                <button type="button" class="btn-secondary" onclick="openSelectTableForOrder()">Chọn bàn</button>
+                                <div id="selectedTablesDisplay" style="margin-top: 10px; padding: 10px; background: #f0f7ff; border-radius: 4px; display: none;">
+                                    <p><strong>Đã chọn:</strong> <span id="selectedTablesList"></span></p>
+                                    <button type="button" class="btn-link" onclick="clearTableSelection()">Chọn lại</button>
+                                </div>
+                                <input type="hidden" id="selectedTableNumbers">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <textarea id="orderNotes" rows="3" placeholder="Ghi chú cho đơn hàng"></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary" onclick="previewManagerOrder()">Xem trước Order</button>
+                                <button type="submit" class="btn-primary">Tạo Đơn Hàng</button>
+                                <button type="button" class="btn-secondary" onclick="resetCreateOrderForm()">Làm Mới</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Cột phải: Danh sách menu/combo -->
+                    <div class="create-order-menu-section">
+                        <h3>Thực Đơn</h3>
+                        <div class="menu-search-bar">
+                            <input type="text" id="menuSearchInput" placeholder="Tìm kiếm món ăn hoặc combo..." 
+                                   onkeypress="handleMenuSearchKeyPress(event)">
+                            <button onclick="searchMenuForOrder()">Tìm kiếm</button>
+                        </div>
+                        <div class="menu-tabs-create">
+                            <button id="menuTabBtnCreate" onclick="showMenuTabForOrder()" class="active">Món ăn</button>
+                            <button id="comboTabBtnCreate" onclick="showComboTabForOrder()">Combo</button>
+                            <button id="allTabBtnCreate" onclick="showAllMenuForOrder()">Tất cả</button>
+                        </div>
+                        <div class="menu-list-container" id="menuListContainer">
+                            <!-- Danh sách menu/combo sẽ được load ở đây -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phần dưới cùng: Danh sách thực đơn -->
+                <div class="create-order-items-section">
+                    <h3>Danh sách thực đơn *</h3>
+                    <div class="order-items-table-container">
+                        <table class="order-items-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Loại hàng</th>
+                                    <th>ĐVT</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsTableBody">
+                                <!-- Các món sẽ được thêm ở đây -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="text-align: right; font-weight: bold;">Tổng tiền:</td>
+                                    <td id="orderTotalAmount" style="font-weight: bold; font-size: 1.1em;">0</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 3: Cập Nhật Đơn Hàng -->
+            <div id="tab-update" class="tab-content">
+                <div class="search-bar" style="margin-bottom: 20px;">
+                    <input type="text" id="searchOrderInput" placeholder="Tìm kiếm đơn hàng theo mã đơn, tên khách hàng...">
+                    <button class="btn-primary" onclick="searchOrders()">Tìm Kiếm</button>
+                    <button class="btn-secondary" onclick="resetOrderSearch()">Xóa Bộ Lọc</button>
+                </div>
+                
+                <div class="orders-table-container">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Đơn</th>
+                                <th>Khách Hàng</th>
+                                <th>Ngày Đặt</th>
+                                <th>Tổng Tiền</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <!-- Danh sách sẽ được load ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab 4: Thanh Toán -->
+            <div id="tab-payment" class="tab-content">
+                <div class="payment-section">
+                    <h3>Quản Lý Thanh Toán</h3>
+                    
+                    <!-- Search Bar -->
+                    <div class="search-bar" style="margin-bottom: 20px;">
+                        <input type="text" id="paymentCustomerSearch" placeholder="Tìm kiếm theo Mã số, Tên, SĐT..." 
+                               onkeyup="searchPaymentCustomers()">
+                        <button class="btn-primary" onclick="searchPaymentCustomers()">Tìm Kiếm</button>
+                        <button class="btn-secondary" onclick="resetPaymentSearch()">Xóa Bộ Lọc</button>
+                    </div>
+                    
+                    <!-- Customers Table -->
+                    <div class="orders-table-container">
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Số</th>
+                                    <th>Tên KH</th>
+                                    <th>SĐT</th>
+                                    <th>Dư Nợ</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentCustomersTableBody">
+                                <!-- Danh sách sẽ được load ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Phát Sinh Nợ -->
+    <div id="addDebtModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="closeAddDebtModal()">&times;</span>
+            <h2>Phát Sinh Nợ</h2>
+            <form id="addDebtForm">
+                <input type="hidden" id="addDebtCustomerId">
+                <div class="form-group">
+                    <label>Khách hàng:</label>
+                    <input type="text" id="addDebtCustomerName" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Mã số KH:</label>
+                    <input type="text" id="addDebtCustomerCode" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Dư nợ hiện tại:</label>
+                    <input type="text" id="addDebtCurrentDebt" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Số tiền phát sinh nợ *</label>
+                    <input type="number" id="addDebtAmount" min="0" step="1000" required placeholder="Nhập số tiền">
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <textarea id="addDebtNote" rows="3" placeholder="Ghi chú (tùy chọn)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Xác Nhận</button>
+                    <button type="button" class="btn-secondary" onclick="closeAddDebtModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Thanh Toán Dư Nợ -->
+    <div id="payDebtModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="closePayDebtModal()">&times;</span>
+            <h2>Thanh Toán Dư Nợ</h2>
+            <form id="payDebtForm">
+                <input type="hidden" id="payDebtCustomerId">
+                <div class="form-group">
+                    <label>Khách hàng:</label>
+                    <input type="text" id="payDebtCustomerName" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Mã số KH:</label>
+                    <input type="text" id="payDebtCustomerCode" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Dư nợ hiện tại:</label>
+                    <input type="text" id="payDebtCurrentDebt" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Số tiền thanh toán *</label>
+                    <input type="number" id="payDebtAmount" min="0" step="1000" required placeholder="Nhập số tiền">
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <textarea id="payDebtNote" rows="3" placeholder="Ghi chú (tùy chọn)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Xác Nhận Thanh Toán</button>
+                    <button type="button" class="btn-secondary" onclick="closePayDebtModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal In Phiếu Thu -->
+    <div id="printReceiptModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closePrintReceiptModal()">&times;</span>
+            <div class="print-content" id="receiptPrintContent">
+                <!-- Nội dung phiếu thu sẽ được load ở đây -->
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" class="btn-primary" onclick="printReceipt()">In Phiếu Thu</button>
+                <button type="button" class="btn-secondary" onclick="closePrintReceiptModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Order Modal -->
+    <div id="updateOrderModal" class="update-order-modal" style="display: none;">
+        <div class="update-order-modal-content">
+            <div class="update-order-header">
+                <h2 style="text-align: center; width: 100%;">Hóa đơn</h2>
+                <span class="close-update-order-modal" onclick="closeUpdateOrderModal()">&times;</span>
+            </div>
+            <div class="update-order-body">
+                <input type="hidden" id="updateOrderId">
+                
+                <div class="order-info-section">
+                    <div class="info-grid">
+                        <div><strong>Mã đơn:</strong> <span id="updateOrderNumber"></span></div>
+                        <div><strong>Khách hàng:</strong> <span id="updateCustomerName"></span></div>
+                        <div><strong>SĐT:</strong> <span id="updateCustomerPhone"></span></div>
+                        <div><strong>Ngày đặt:</strong> <span id="updateOrderDate"></span></div>
+                    </div>
+                </div>
+                
+                <div class="voucher-selection-section" id="voucherSelectionSection" style="display: none; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                    <label for="selectedVoucher" style="display: block; margin-bottom: 8px; font-weight: bold;">Chọn Voucher (nếu có):</label>
+                    <select id="selectedVoucher" onchange="applyVoucher()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">-- Không sử dụng voucher --</option>
+                    </select>
+                    <small style="display: block; margin-top: 5px; color: #666;">Mỗi lần thanh toán chỉ được sử dụng 1 voucher</small>
+                </div>
+                
+                <div class="invoice-items-section">
+                    <button type="button" class="btn-secondary" onclick="addInvoiceItem()" style="margin-bottom: 10px;">+ Thêm món</button>
+                    <div class="invoice-items-table-container">
+                        <table class="invoice-items-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Loại hàng</th>
+                                    <th>ĐVT</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceItemsTableBody">
+                                <!-- Các món sẽ được load ở đây -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="text-align: right; font-weight: bold;">Tổng tiền hàng hóa:</td>
+                                    <td id="invoiceSubtotal" style="font-weight: bold;">0</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" style="text-align: right;">Chiết khấu (%):</td>
+                                    <td>
+                                        <input type="number" id="discountPercent" min="0" max="100" value="0" 
+                                               onchange="calculateInvoiceTotal()" style="width: 80px; padding: 5px;">
+                                        <span>%</span>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" style="text-align: right; font-weight: bold;">Tiền chiết khấu:</td>
+                                    <td id="discountAmount" style="font-weight: bold;">0</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" style="text-align: right; font-weight: bold; font-size: 1.1em;">Tổng thanh toán:</td>
+                                    <td id="invoiceTotal" style="font-weight: bold; font-size: 1.1em; color: #8d5524;">0</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="printInvoice()">In Hóa Đơn</button>
+                    <button type="button" class="btn-primary" onclick="processPayment()">Thanh Toán</button>
+                    <button type="button" class="btn-secondary" onclick="closeUpdateOrderModal()">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="orders-manager.js"></script>
+    <script src="create-order.js"></script>
+    <script src="update-orders.js"></script>
+    <!-- Load manager.js sau để có các function payment, nhưng bảo vệ các function đã được định nghĩa -->
+    <script>
+        // Lưu các function từ orders-manager.js và update-orders.js trước khi load manager.js
+        const savedLoadPendingOrders = window.loadPendingOrders;
+        const savedConfirmOrder = window.confirmOrder;
+        const savedLoadOrders = window.loadOrders;
+    </script>
+    <script src="manager.js"></script>
+    <script>
+        // Khôi phục các function từ orders-manager.js và update-orders.js
+        if (savedLoadPendingOrders) {
+            window.loadPendingOrders = savedLoadPendingOrders;
+        }
+        if (savedConfirmOrder) {
+            window.confirmOrder = savedConfirmOrder;
+        }
+        if (savedLoadOrders) {
+            window.loadOrders = savedLoadOrders;
+        }
+        
+        // Đảm bảo loadPendingOrders được gọi sau khi khôi phục
+        if (document.getElementById('pendingOrdersTableBody') && typeof window.loadPendingOrders === 'function') {
+            // Nếu tab confirm đang active, load ngay
+            const confirmTab = document.getElementById('tab-confirm');
+            if (confirmTab && confirmTab.classList.contains('active')) {
+                window.loadPendingOrders();
+            }
+        }
+    </script>
+    <script>
+        // Function resetCreateOrderForm
+        function resetCreateOrderForm() {
+            const form = document.getElementById('createOrderForm');
+            if (form) {
+                form.reset();
+            }
+            const selectedCustomerId = document.getElementById('selectedCustomerId');
+            if (selectedCustomerId) {
+                selectedCustomerId.value = '';
+            }
+            const selectedCustomerInfo = document.getElementById('selectedCustomerInfo');
+            if (selectedCustomerInfo) {
+                selectedCustomerInfo.style.display = 'none';
+            }
+            const orderItemsTableBody = document.getElementById('orderItemsTableBody');
+            if (orderItemsTableBody) {
+                orderItemsTableBody.innerHTML = '';
+            }
+            const orderTotalAmount = document.getElementById('orderTotalAmount');
+            if (orderTotalAmount) {
+                orderTotalAmount.textContent = '0';
+            }
+        }
+        
+        // Export function để có thể gọi từ HTML
+        window.resetCreateOrderForm = resetCreateOrderForm;
+    </script>
+    
+    <!-- Modal Xem Chi Tiết Order -->
+    <div id="orderDetailModal" class="order-detail-modal" style="display: none;">
+        <div class="order-detail-modal-content">
+            <div class="order-detail-header">
+                <h2>PHIẾU BÁN HÀNG LẺ HÀNG HÓA, DỊCH VỤ</h2>
+                <span class="close-order-detail-modal" onclick="closeOrderDetailModal()">&times;</span>
+            </div>
+            <div class="order-detail-body" id="orderDetailBody">
+                <!-- Nội dung sẽ được load ở đây -->
+            </div>
+            <div class="preview-order-footer">
+                <button class="btn-primary" onclick="closeOrderDetailModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Chọn Bàn -->
+    <div id="selectTableModal" class="select-table-modal" style="display: none;">
+        <div class="select-table-modal-content">
+            <div class="select-table-header">
+                <h3>Chọn Bàn</h3>
+                <span class="close-select-table-modal" onclick="closeSelectTableModal()">&times;</span>
+            </div>
+            <div class="select-table-body">
+                <p><strong>Đơn hàng:</strong> <span id="selectTableOrderInfo"></span></p>
+                <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                    <strong>Hướng dẫn:</strong> Chọn nhiều bàn bằng cách tích vào checkbox hoặc click vào bàn. 
+                    <span id="selectedTablesCount" style="color: #8d5524; font-weight: 500;"></span>
+                </p>
+                <div class="tables-grid-select" id="tablesGridSelect">
+                    <!-- Danh sách bàn sẽ được load ở đây -->
+                </div>
+            </div>
+            <div class="select-table-footer">
+                <button class="btn-primary" onclick="confirmTableSelection()">Xác Nhận</button>
+                <button class="btn-secondary" onclick="closeSelectTableModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .order-detail-modal {
+            position: fixed;
+            z-index: 1200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .order-detail-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin: 20px;
+        }
+        .order-detail-header {
+            text-align: center;
+            border-bottom: 2px solid #8d5524;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .order-detail-header h2 {
+            margin: 0;
+            color: #8d5524;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .close-order-detail-modal {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 32px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-order-detail-modal:hover {
+            color: #000;
+        }
+        .order-detail-body {
+            margin-bottom: 20px;
+        }
+        .preview-business-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .preview-transaction-info {
+            margin-bottom: 20px;
+        }
+        .preview-transaction-info h3 {
+            color: #8d5524;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .preview-transaction-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .preview-items-table {
+            margin-bottom: 20px;
+        }
+        .preview-items-table h3 {
+            color: #8d5524;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .preview-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .preview-table th,
+        .preview-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        .preview-table th {
+            font-weight: bold;
+            text-align: center;
+        }
+        .preview-table td {
+            text-align: right;
+        }
+        .preview-table td:first-child,
+        .preview-table th:first-child {
+            text-align: center;
+            width: 50px;
+        }
+        .preview-table td:nth-child(2) {
+            text-align: left;
+        }
+        .preview-table td:nth-child(3) {
+            text-align: center;
+        }
+        .preview-summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff8f0;
+            border-radius: 4px;
+        }
+        .preview-summary p {
+            margin: 8px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .preview-summary p strong {
+            color: #8d5524;
+        }
+        .preview-order-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .select-table-modal {
+            position: fixed;
+            z-index: 1200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .select-table-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .select-table-header {
+            border-bottom: 2px solid #8d5524;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .select-table-header h3 {
+            margin: 0;
+            color: #8d5524;
+        }
+        .close-select-table-modal {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 32px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-select-table-modal:hover {
+            color: #000;
+        }
+        .tables-grid-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .table-card-select {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .table-card-select:hover {
+            border-color: #8d5524;
+            transform: scale(1.05);
+        }
+        .table-card-select.selected {
+            background: #8d5524;
+            color: white;
+            border-color: #8d5524;
+        }
+        .table-card-select.occupied {
+            background: #ffebee;
+            border-color: #f44336;
+            cursor: not-allowed;
+        }
+        .table-card-select.reserved {
+            background: #fff3e0;
+            border-color: #ff9800;
+            cursor: not-allowed;
+        }
+        .select-table-footer {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn-link-detail {
+            background: none;
+            border: none;
+            color: #8d5524;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+        }
+        .btn-link-detail:hover {
+            color: #6d3f1a;
+        }
+        .update-order-modal {
+            position: fixed;
+            z-index: 1300;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .update-order-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 1000px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin: 20px;
+        }
+        .update-order-header {
+            border-bottom: 2px solid #8d5524;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .update-order-header h2 {
+            margin: 0;
+            color: #8d5524;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .close-update-order-modal {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 32px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-update-order-modal:hover {
+            color: #000;
+        }
+        .update-order-body {
+            margin-bottom: 20px;
+        }
+        .order-info-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .invoice-items-section {
+            margin-top: 20px;
+        }
+        .invoice-items-table-container {
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+        .invoice-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ddd;
+            background: white;
+        }
+        .invoice-items-table thead {
+            background-color: #8d5524;
+            color: white;
+        }
+        .invoice-items-table th {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .invoice-items-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .invoice-items-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .invoice-items-table tbody tr:hover {
+            background-color: #f0f0f0;
+        }
+        .invoice-items-table tfoot {
+            background-color: #fff8f0;
+        }
+        .invoice-items-table tfoot td {
+            font-weight: bold;
+            border: 1px solid #ddd;
+        }
+        .invoice-items-table input[type="text"],
+        .invoice-items-table input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+    </style>
+    
+    <!-- Modal Xem trước Order (cho phần Tạo đơn hàng) -->
+    <div id="previewManagerOrderModal" class="order-detail-modal" style="display: none;">
+        <div class="order-detail-modal-content">
+            <div class="order-detail-header">
+                <h2>PHIẾU BÁN HÀNG LẺ HÀNG HÓA, DỊCH VỤ</h2>
+                <span class="close-order-detail-modal" onclick="closePreviewManagerOrderModal()">&times;</span>
+            </div>
+            <div class="order-detail-body" id="previewManagerOrderBody">
+                <!-- Nội dung sẽ được load ở đây -->
+            </div>
+            <div class="preview-order-footer">
+                <button class="btn-primary" onclick="closePreviewManagerOrderModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Chọn Bàn (cho phần Tạo đơn hàng) -->
+    <div id="selectTableForOrderModal" class="select-table-modal" style="display: none;">
+        <div class="select-table-modal-content">
+            <div class="select-table-header">
+                <h3>Chọn Bàn</h3>
+                <span class="close-select-table-modal" onclick="closeSelectTableForOrderModal()">&times;</span>
+            </div>
+            <div class="select-table-body">
+                <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                    <strong>Hướng dẫn:</strong> Chọn nhiều bàn bằng cách tích vào checkbox hoặc click vào bàn. 
+                    <span id="selectedTablesCountForOrder" style="color: #8d5524; font-weight: 500;"></span>
+                </p>
+                <div class="tables-grid-select" id="tablesGridSelectForOrder">
+                    <!-- Danh sách bàn sẽ được load ở đây -->
+                </div>
+            </div>
+            <div class="select-table-footer">
+                <button class="btn-primary" onclick="confirmTableSelectionForOrder()">Xác Nhận</button>
+                <button class="btn-secondary" onclick="closeSelectTableForOrderModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="orders-manager.js"></script>
+    <script src="create-order.js"></script>
+    <script src="update-orders.js"></script>
+    <script src="manager.js"></script>
+    <script>
+        // Event listeners cho form Phát Sinh Nợ
+        document.addEventListener('DOMContentLoaded', function() {
+            const addDebtForm = document.getElementById('addDebtForm');
+            if (addDebtForm) {
+                addDebtForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await submitAddDebt();
+                });
+            }
+            
+            // Event listeners cho form Thanh Toán Dư Nợ
+            const payDebtForm = document.getElementById('payDebtForm');
+            if (payDebtForm) {
+                payDebtForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await submitPayDebt();
+                });
+            }
+            
+            // Đóng modal khi click bên ngoài
+            window.onclick = function(event) {
+                const addDebtModal = document.getElementById('addDebtModal');
+                const payDebtModal = document.getElementById('payDebtModal');
+                const printReceiptModal = document.getElementById('printReceiptModal');
+                
+                if (event.target === addDebtModal) {
+                    closeAddDebtModal();
+                }
+                if (event.target === payDebtModal) {
+                    closePayDebtModal();
+                }
+                if (event.target === printReceiptModal) {
+                    closePrintReceiptModal();
+                }
+            }
+        });
+        
+        // Submit Phát Sinh Nợ
+        async function submitAddDebt() {
+            const customerId = document.getElementById('addDebtCustomerId').value;
+            const amount = parseFloat(document.getElementById('addDebtAmount').value);
+            const note = document.getElementById('addDebtNote').value.trim();
+            
+            if (!customerId || !amount || amount <= 0) {
+                alert('Vui lòng nhập số tiền hợp lệ');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/manager/customers/debt/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customerId,
+                        amount,
+                        note: note || 'Phát sinh nợ'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Phát sinh nợ thành công!');
+                    closeAddDebtModal();
+                    loadPaymentCustomers();
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể phát sinh nợ'));
+                }
+            } catch (error) {
+                console.error('Error adding debt:', error);
+                alert('Có lỗi xảy ra khi phát sinh nợ');
+            }
+        }
+        
+        // Submit Thanh Toán Dư Nợ
+        async function submitPayDebt() {
+            const customerId = document.getElementById('payDebtCustomerId').value;
+            const amount = parseFloat(document.getElementById('payDebtAmount').value);
+            const note = document.getElementById('payDebtNote').value.trim();
+            
+            if (!customerId || !amount || amount <= 0) {
+                alert('Vui lòng nhập số tiền hợp lệ');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/manager/customers/debt/pay', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customerId,
+                        amount,
+                        note: note || 'Thanh toán dư nợ'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Thanh toán thành công!');
+                    closePayDebtModal();
+                    
+                    // Hiển thị modal in phiếu thu
+                    await displayReceipt(data.receipt);
+                    
+                    loadPaymentCustomers();
+                } else {
+                    alert('Lỗi: ' + (data.error || 'Không thể thanh toán'));
+                }
+            } catch (error) {
+                console.error('Error paying debt:', error);
+                alert('Có lỗi xảy ra khi thanh toán');
+            }
+        }
+        
+        // Hiển thị phiếu thu
+        async function displayReceipt(receipt) {
+            const modal = document.getElementById('printReceiptModal');
+            const content = document.getElementById('receiptPrintContent');
+            
+            if (!modal || !content) return;
+            
+            const date = new Date(receipt.date || Date.now());
+            const dateStr = date.toLocaleDateString('vi-VN');
+            const timeStr = date.toLocaleTimeString('vi-VN');
+            
+            content.innerHTML = `
+                <div class="receipt-header" style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: #8d5524;">PHIẾU THU</h2>
+                    <p style="margin: 5px 0;">Nhà Hàng Phương Anh</p>
+                </div>
+                <div class="receipt-info" style="margin-bottom: 20px;">
+                    <p><strong>Ngày:</strong> ${dateStr}</p>
+                    <p><strong>Giờ:</strong> ${timeStr}</p>
+                    <p><strong>Mã số KH:</strong> ${receipt.customerCode || 'N/A'}</p>
+                    <p><strong>Khách hàng:</strong> ${receipt.customerName || 'N/A'}</p>
+                    <p><strong>Số tiền:</strong> ${(receipt.amount || 0).toLocaleString('vi-VN')} VNĐ</p>
+                    <p><strong>Ghi chú:</strong> ${receipt.note || ''}</p>
+                </div>
+                <div class="receipt-signatures" style="margin-top: 40px; display: flex; justify-content: space-between;">
+                    <div class="signature-box" style="text-align: center;">
+                        <p style="border-top: 1px solid #000; padding-top: 5px; width: 200px;">Người nộp tiền</p>
+                    </div>
+                    <div class="signature-box" style="text-align: center;">
+                        <p style="border-top: 1px solid #000; padding-top: 5px; width: 200px;">Người thu tiền</p>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        // In phiếu thu
+        function printReceipt() {
+            const content = document.getElementById('receiptPrintContent');
+            if (!content) return;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Phiếu Thu</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            .receipt-header { text-align: center; margin-bottom: 20px; }
+                            .receipt-info { margin-bottom: 20px; }
+                            .receipt-signatures { margin-top: 40px; display: flex; justify-content: space-between; }
+                            .signature-box { text-align: center; }
+                            @media print {
+                                body { margin: 0; padding: 10px; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${content.innerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        window.submitAddDebt = submitAddDebt;
+        window.submitPayDebt = submitPayDebt;
+        window.displayReceipt = displayReceipt;
+        window.printReceipt = printReceipt;
+    </script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

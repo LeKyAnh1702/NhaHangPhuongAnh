@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cảnh Báo Tồn Kho - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+    <style>
+        .alerts-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .alerts-title {
+            text-align: center;
+            color: #8d5524;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+        .alerts-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        .summary-card.red {
+            background: #ffe6e6;
+            border-color: #ff4444;
+        }
+        .summary-card.yellow {
+            background: #fff8e6;
+            border-color: #ffaa00;
+        }
+        .summary-card-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .summary-card-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .summary-card.red .summary-card-value {
+            color: #ff4444;
+        }
+        .summary-card.yellow .summary-card-value {
+            color: #ffaa00;
+        }
+        .alerts-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .alerts-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .alerts-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .alerts-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .alerts-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .alerts-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .alerts-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .alerts-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        .alerts-table td:first-child {
+            text-align: center;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-block;
+        }
+        .status-badge.out {
+            background: #ff4444;
+            color: white;
+        }
+        .status-badge.low {
+            background: #ffaa00;
+            color: white;
+        }
+        .no-alerts {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+        .refresh-btn {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Cảnh Báo Tồn Kho</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="alerts-container">
+            <h1 class="alerts-title">Cảnh Báo Tồn Kho</h1>
+            
+            <div class="alerts-summary" id="alertsSummary">
+                <div class="summary-card red">
+                    <div class="summary-card-label">Cảnh Báo Đỏ (Đã Hết)</div>
+                    <div class="summary-card-value" id="redAlertsCount">0</div>
+                </div>
+                <div class="summary-card yellow">
+                    <div class="summary-card-label">Cảnh Báo Vàng (Sắp Hết)</div>
+                    <div class="summary-card-value" id="yellowAlertsCount">0</div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button class="btn-primary refresh-btn" onclick="loadAlerts()">🔄 Làm Mới</button>
+            </div>
+            
+            <div class="alerts-table-container">
+                <table class="alerts-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Số</th>
+                            <th>Tên NVL</th>
+                            <th>Đơn Vị Tính</th>
+                            <th>Số Lượng Còn Lại</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertsTableBody">
+                        <tr>
+                            <td colspan="6" class="no-alerts">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="inventory-alerts.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>

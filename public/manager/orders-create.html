@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Đơn Hàng - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Tạo Đơn Hàng</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="create-order-section">
+            <h2>Tạo Đơn Hàng Mới</h2>
+            
+            <form id="createOrderForm" class="order-form">
+                <div class="form-group">
+                    <label>Khách hàng *</label>
+                    <div class="customer-search-container">
+                        <input type="text" id="customerSearch" placeholder="Tìm kiếm khách hàng..." 
+                               onkeyup="filterCustomers()" autocomplete="off">
+                        <div id="customerDropdown" class="customer-dropdown"></div>
+                    </div>
+                    <input type="hidden" id="selectedCustomerId">
+                    <div id="selectedCustomerInfo" class="selected-customer-info" style="display: none;">
+                        <p><strong>Đã chọn:</strong> <span id="selectedCustomerName"></span></p>
+                        <button type="button" class="btn-link" onclick="clearCustomerSelection()">Chọn lại</button>
+                    </div>
+                    <button type="button" class="btn-link" onclick="createNewCustomer()">Thêm khách hàng mới</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Số bàn</label>
+                    <select id="tableNumber">
+                        <option value="">-- Chọn bàn --</option>
+                        <!-- Sẽ được load từ API -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <textarea id="orderNotes" rows="3" placeholder="Ghi chú cho đơn hàng"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Danh sách món ăn *</label>
+                    <button type="button" class="btn-secondary" onclick="addOrderItem()">+ Thêm món</button>
+                    <table class="order-items-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Món Ăn</th>
+                                <th>Số Lượng</th>
+                                <th>Đơn Giá</th>
+                                <th>Thành Tiền</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderItemsTableBody">
+                            <!-- Các món sẽ được thêm ở đây -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" style="text-align: right; font-weight: bold;">Tổng tiền:</td>
+                                <td id="orderTotalAmount" style="font-weight: bold; font-size: 1.1em;">0</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Tạo Đơn Hàng</button>
+                    <button type="button" class="btn-secondary" onclick="window.location.href='/manager/dashboard'">Hủy</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="manager.js"></script>
+</body>
+</html>
+

@@ -14,12 +14,86 @@
             <ul>
                 <li><a href="/">Trang Chủ</a></li>
                 <li><a href="/customer">Đặt Hàng</a></li>
-                <li><a href="#orders">Đơn Hàng Của Tôi</a></li>
                 <li><a href="#points">Điểm Tích Lũy</a></li>
             </ul>
         </nav>
     </header>
     <main>
+        <!-- Thông báo chào mừng khách hàng -->
+        <div id="customerWelcomeMessage" class="customer-welcome-message" style="display: none;">
+            <!-- Sẽ được hiển thị sau khi kiểm tra -->
+        </div>
+        
+        <!-- Phần điểm tích lũy ở đầu trang -->
+        <section id="points-section" style="background: #fff8f0; padding: 12px 16px; margin-bottom: 15px; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 6px 0; color: #8d5524; font-size: 16px;">Điểm Tích Lũy</h3>
+                    <div class="points-info">
+                        <p id="totalOrdersInfo" style="margin: 2px 0; font-size: 14px; display: none;">Tổng số HĐ đã thanh toán: <span id="totalPaidOrders" style="font-weight: bold; color: #8d5524;">0</span></p>
+                        <p style="margin: 2px 0; font-size: 14px;">Số điểm tích lũy: <span id="currentPoints" style="font-size: 18px; font-weight: bold; color: #8d5524;">0</span></p>
+                        <p id="voucherEligibilityMessage" style="margin: 2px 0; color: #28a745; font-size: 12px; font-weight: 500; display: none;"></p>
+                        <p id="voucherCongratulationsMessage" style="margin: 4px 0; padding: 8px; background: #d4edda; color: #155724; border-radius: 4px; font-size: 13px; font-weight: 500; display: none;"></p>
+                    </div>
+                </div>
+                <div id="registerButtonContainer">
+                    <button onclick="openRegisterModal()" style="padding: 8px 16px; background: #8d5524; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.3s; white-space: nowrap;">
+                        Đăng ký thành viên
+                    </button>
+                </div>
+            </div>
+            <div id="pointsHistory" style="display: none; margin-top: 15px;"></div>
+        </section>
+        
+        <style>
+            .customer-welcome-message {
+                background: #e8f5e9;
+                color: #2e7d32;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 8px;
+                border: 2px solid #4caf50;
+                text-align: center;
+                font-size: 18px;
+                font-weight: 500;
+            }
+            .customer-welcome-message.new {
+                background: #e3f2fd;
+                color: #1565c0;
+                border: 2px solid #2196f3;
+            }
+        </style>
+        
+        <!-- Modal đăng ký thành viên -->
+        <div id="registerMemberModal" class="register-modal" style="display: none;">
+            <div class="register-modal-content">
+                <span class="close-register-modal" onclick="closeRegisterModal()">&times;</span>
+                <h2 style="color: #8d5524; margin-top: 0;">Đăng Ký Thành Viên</h2>
+                <form id="registerMemberForm" class="register-member-form">
+                    <div class="form-group">
+                        <label for="memberName">Họ và tên *</label>
+                        <input type="text" id="memberName" placeholder="Nhập họ và tên" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberPhone">Số điện thoại *</label>
+                        <input type="tel" id="memberPhone" placeholder="Nhập số điện thoại" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberEmail">Email</label>
+                        <input type="email" id="memberEmail" placeholder="Nhập email (tùy chọn)">
+                    </div>
+                    <div class="form-group">
+                        <label for="memberAddress">Địa chỉ</label>
+                        <input type="text" id="memberAddress" placeholder="Nhập địa chỉ (tùy chọn)">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Đăng Ký</button>
+                        <button type="button" class="btn-secondary" onclick="closeRegisterModal()">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
         <section id="auth-section" style="display: none;">
             <h2>Đăng Nhập / Đăng Ký</h2>
             <div class="auth-tabs">
@@ -54,24 +128,600 @@
             <h2>Thực Đơn</h2>
             <div class="menu-filters">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn...">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn hoặc combo..." onkeypress="handleSearchKeyPress(event)">
                     <button onclick="searchMenu()">Tìm kiếm</button>
                 </div>
-                <div class="category-filter">
-                    <button onclick="loadMenu()">Tất cả</button>
-                    <div id="categoryButtons"></div>
-                </div>
                 <div class="menu-tabs">
-                    <button onclick="showMenuTab()" class="active">Món ăn</button>
-                    <button onclick="showComboTab()">Combo</button>
+                    <button id="menuTabBtn" onclick="showMenuTab()" class="active">Món ăn</button>
+                    <button id="comboTabBtn" onclick="showComboTab()">Combo</button>
                 </div>
             </div>
             <div class="menu-grid" id="menuGrid">
-                <!-- Menu items will be loaded here -->
+                <!-- Menu items and combos will be loaded here -->
             </div>
         </section>
+        
+        <!-- Modal xác nhận thêm vào giỏ hàng -->
+        <div id="confirmModal" class="confirm-modal" style="display: none;">
+            <div class="confirm-modal-content">
+                <span class="close-modal" onclick="closeConfirmModal()">&times;</span>
+                <h3 id="confirmModalTitle">Xác nhận thêm vào giỏ hàng</h3>
+                <div id="confirmModalBody">
+                    <!-- Nội dung sẽ được điền bởi JavaScript -->
+                </div>
+                <div class="confirm-modal-actions">
+                    <button class="btn-confirm" onclick="confirmAddToCart()">Xác nhận</button>
+                    <button class="btn-cancel" onclick="closeConfirmModal()">Hủy</button>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .confirm-modal {
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .confirm-modal-content {
+                background-color: white;
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                position: relative;
+            }
+            .close-modal {
+                position: absolute;
+                right: 15px;
+                top: 15px;
+                font-size: 28px;
+                font-weight: bold;
+                color: #aaa;
+                cursor: pointer;
+            }
+            .close-modal:hover {
+                color: #000;
+            }
+            .confirm-modal-content h3 {
+                margin-top: 0;
+                color: #8d5524;
+            }
+            .confirm-modal-body {
+                margin: 20px 0;
+            }
+            .confirm-modal-body p {
+                margin: 10px 0;
+            }
+            .confirm-modal-body .item-name {
+                font-weight: bold;
+                font-size: 18px;
+                color: #333;
+            }
+            .confirm-modal-body .item-price {
+                font-size: 16px;
+                color: #8d5524;
+            }
+            .confirm-modal-actions {
+                display: flex;
+                gap: 12px;
+                margin-top: 20px;
+            }
+            .btn-confirm {
+                flex: 1;
+                padding: 12px 24px;
+                background: #8d5524;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 16px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            .btn-confirm:hover {
+                background: #6d3f1a;
+            }
+            .btn-cancel {
+                flex: 1;
+                padding: 12px 24px;
+                background: #6c757d;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            .btn-cancel:hover {
+                background: #5a6268;
+            }
+            .menu-item {
+                cursor: pointer;
+                transition: transform 0.2s;
+                position: relative;
+            }
+            .menu-item:hover {
+                transform: translateY(-5px);
+            }
+            .item-type-badge {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: #8d5524;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+                z-index: 10;
+            }
+            .combo-items {
+                margin: 10px 0;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+            .combo-items ul {
+                margin: 8px 0 0 0;
+                padding-left: 20px;
+            }
+            .combo-items li {
+                margin: 4px 0;
+            }
+            .cart-floating-btn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                width: 60px;
+                height: 60px;
+                background: #8d5524;
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                transition: all 0.3s;
+                z-index: 999;
+            }
+            .cart-floating-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+                background: #6d3f1a;
+            }
+            .cart-icon {
+                font-size: 28px;
+            }
+            .cart-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #ff4444;
+                color: white;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+                border: 2px solid white;
+            }
+            .cart-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .cart-modal-content {
+                width: 90%;
+                max-width: 500px;
+                height: 100%;
+                background: white;
+                box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            .register-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1001;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .register-modal-content {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                position: relative;
+            }
+            .close-register-modal {
+                position: absolute;
+                right: 15px;
+                top: 15px;
+                font-size: 28px;
+                font-weight: bold;
+                color: #aaa;
+                cursor: pointer;
+            }
+            .close-register-modal:hover {
+                color: #000;
+            }
+            .register-member-form {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            .register-member-form .form-group {
+                display: flex;
+                flex-direction: column;
+            }
+            .register-member-form .form-group label {
+                margin-bottom: 8px;
+                font-weight: 500;
+                color: #333;
+            }
+            .register-member-form .form-group input {
+                padding: 12px 16px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 16px;
+            }
+            .register-member-form .form-group input:focus {
+                outline: none;
+                border-color: #8d5524;
+                box-shadow: 0 0 0 2px rgba(141, 85, 36, 0.1);
+            }
+            .register-member-form .form-actions {
+                display: flex;
+                gap: 12px;
+                margin-top: 10px;
+            }
+            .cart-modal-header {
+                padding: 20px;
+                border-bottom: 1px solid #ddd;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #8d5524;
+                color: white;
+            }
+            .cart-modal-header h2 {
+                margin: 0;
+                color: white;
+            }
+            .close-cart-modal {
+                font-size: 32px;
+                cursor: pointer;
+                color: white;
+                line-height: 1;
+            }
+            .close-cart-modal:hover {
+                opacity: 0.7;
+            }
+            .cart-modal-body {
+                padding: 20px;
+                flex: 1;
+                overflow-y: auto;
+            }
+            @media (max-width: 768px) {
+                .cart-floating-btn {
+                    bottom: 20px;
+                    right: 20px;
+                    width: 50px;
+                    height: 50px;
+                }
+                .cart-icon {
+                    font-size: 24px;
+                }
+                .cart-modal-content {
+                    width: 100%;
+                    max-width: 100%;
+                }
+            }
+        </style>
 
-        <section id="cart-section">
+        <!-- Floating Cart Button -->
+        <div id="cartFloatingBtn" class="cart-floating-btn" onclick="toggleCartModal()">
+            <span class="cart-icon">🛒</span>
+            <span id="cartBadge" class="cart-badge" style="display: none;">0</span>
+        </div>
+        
+        <!-- Cart Modal -->
+        <div id="cartModal" class="cart-modal" style="display: none;">
+            <div class="cart-modal-content">
+                <div class="cart-modal-header">
+                    <h2>Đơn hàng của tôi</h2>
+                    <span class="close-cart-modal" onclick="toggleCartModal()">&times;</span>
+                </div>
+                <div class="cart-modal-body">
+                    <div id="cartItemsModal"></div>
+                    <div id="numberOfPeopleSection" class="customer-info-section" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <label for="numberOfPeople" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Số lượng người *</label>
+                        <input type="number" id="numberOfPeople" placeholder="Nhập số lượng người" min="1" value="1" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;">
+                    </div>
+                    <div id="eatingTimeSection" class="customer-info-section" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <label for="eatingTime" style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Thời gian ăn *</label>
+                        <input type="datetime-local" id="eatingTime" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;">
+                    </div>
+                    <div class="cart-total">
+                        <p>Tổng tiền: <span id="cartTotalModal">0</span> VNĐ</p>
+                    </div>
+                    <div class="discount-info" id="discountInfoModal" style="display: none;">
+                        <p>Giảm giá (Voucher): <span id="discountAmountModal">0</span> VNĐ</p>
+                    </div>
+                    <div class="delivery-type">
+                        <label><input type="radio" name="deliveryTypeModal" value="at-table" checked onchange="handleDeliveryTypeChange()"> Tại bàn</label>
+                        <label><input type="radio" name="deliveryTypeModal" value="takeaway" onchange="handleDeliveryTypeChange()"> Mang về</label>
+                        <label><input type="radio" name="deliveryTypeModal" value="delivery" onchange="handleDeliveryTypeChange()"> Giao hàng</label>
+                    </div>
+                    <div id="deliveryAddressModal" style="display: none;">
+                        <input type="text" id="addressInputModal" placeholder="Địa chỉ giao hàng">
+                    </div>
+                    <div class="voucher-application-section" id="voucherApplicationSection" style="display: none;">
+                        <label><input type="checkbox" id="applyVoucherModal" onchange="handleVoucherApplication()"> Áp dụng Voucher</label>
+                        <div id="voucherInfoModal" style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-radius: 4px; font-size: 12px; color: #2e7d32; display: none;">
+                            <p style="margin: 0;">Voucher trị giá 500.000 VNĐ sẽ được áp dụng cho hóa đơn này</p>
+                        </div>
+                    </div>
+                    <div class="final-total">
+                        <p>Thành tiền: <span id="finalTotalModal">0</span> VNĐ</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-secondary" onclick="previewOrder()" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Xem trước Order
+                        </button>
+                        <button class="checkout-btn" onclick="checkoutFromModal()" style="flex: 1;">Đặt Hàng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Xem trước Order -->
+        <div id="previewOrderModal" class="preview-order-modal" style="display: none;">
+            <div class="preview-order-modal-content">
+                <div class="preview-order-header">
+                    <h2>PHIẾU BÁN HÀNG LẺ HÀNG HÓA, DỊCH VỤ</h2>
+                    <span class="close-preview-modal" onclick="closePreviewOrderModal()">&times;</span>
+                </div>
+                <div class="preview-order-body">
+                    <div class="preview-business-info">
+                        <p><strong>Đơn vị phát hành:</strong> Hộ kinh doanh: Lê Kỳ Anh, địa chỉ tại Sơn Dương, T. Tuyên Quang.</p>
+                    </div>
+                    
+                    <div class="preview-transaction-info">
+                        <h3>Thông tin giao dịch:</h3>
+                        <p><strong>Người mua:</strong> <span id="previewCustomerName">Khách lẻ</span></p>
+                        <p><strong>Ngày lập:</strong> <span id="previewOrderDate"></span></p>
+                        <p><strong>Số Order:</strong> <span id="previewOrderNumber"></span></p>
+                        <p><strong>Thời gian ăn:</strong> <span id="previewEatingTime"></span></p>
+                    </div>
+                    
+                    <div class="preview-items-table">
+                        <h3>Mặt hàng và Giá trị:</h3>
+                        <table class="preview-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Loại hàng</th>
+                                    <th>ĐVT</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewItemsTableBody">
+                                <!-- Items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="preview-summary">
+                        <p><strong>Tổng cộng thành tiền hàng hóa:</strong> <span id="previewTotalAmount">0</span> VNĐ</p>
+                        <p><strong>Tiền chiết khấu:</strong> <span id="previewDiscount">0</span> VNĐ</p>
+                        <p><strong>Tổng thanh toán (Thực nhận):</strong> <span id="previewFinalTotal">0</span> VNĐ</p>
+                        <p><strong>Lũy kế còn nợ:</strong> <span id="previewDebt">0</span> VNĐ</p>
+                    </div>
+                </div>
+                <div class="preview-order-footer">
+                    <button class="btn-download" onclick="downloadOrderPreview()" title="Tải ảnh phiếu">
+                        <span style="font-size: 18px; margin-right: 8px;">📥</span>
+                        Tải ảnh phiếu
+                    </button>
+                    <button class="btn-primary" onclick="closePreviewOrderModal()">Đóng</button>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .preview-order-modal {
+                position: fixed;
+                z-index: 1100;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow-y: auto;
+            }
+            .preview-order-modal-content {
+                background-color: white;
+                padding: 30px;
+                border-radius: 8px;
+                max-width: 900px;
+                width: 95%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                margin: 20px;
+            }
+            .preview-order-header {
+                text-align: center;
+                border-bottom: 2px solid #8d5524;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+                position: relative;
+            }
+            .preview-order-header h2 {
+                margin: 0;
+                color: #8d5524;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            .close-preview-modal {
+                position: absolute;
+                right: 0;
+                top: 0;
+                font-size: 32px;
+                font-weight: bold;
+                color: #aaa;
+                cursor: pointer;
+                line-height: 1;
+            }
+            .close-preview-modal:hover {
+                color: #000;
+            }
+            .preview-business-info {
+                margin-bottom: 20px;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+            .preview-transaction-info {
+                margin-bottom: 20px;
+            }
+            .preview-transaction-info h3 {
+                color: #8d5524;
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+            .preview-transaction-info p {
+                margin: 5px 0;
+                font-size: 14px;
+            }
+            .preview-items-table {
+                margin-bottom: 20px;
+            }
+            .preview-items-table h3 {
+                color: #8d5524;
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+            .preview-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+            .preview-table thead {
+                background: #8d5524;
+                color: white;
+            }
+            .preview-table th,
+            .preview-table td {
+                padding: 10px;
+                text-align: left;
+                border: 1px solid #ddd;
+            }
+            .preview-table th {
+                font-weight: bold;
+                text-align: center;
+            }
+            .preview-table td {
+                text-align: right;
+            }
+            .preview-table td:first-child,
+            .preview-table th:first-child {
+                text-align: center;
+                width: 50px;
+            }
+            .preview-table td:nth-child(2) {
+                text-align: left;
+            }
+            .preview-table td:nth-child(3) {
+                text-align: center;
+            }
+            .preview-summary {
+                margin-top: 20px;
+                padding: 15px;
+                background: #fff8f0;
+                border-radius: 4px;
+            }
+            .preview-summary p {
+                margin: 8px 0;
+                font-size: 14px;
+                display: flex;
+                justify-content: space-between;
+            }
+            .preview-summary p strong {
+                color: #8d5524;
+            }
+            .preview-order-footer {
+                margin-top: 20px;
+                text-align: center;
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+            .btn-download {
+                padding: 10px 20px;
+                background: #28a745;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                transition: background 0.3s;
+            }
+            .btn-download:hover {
+                background: #218838;
+            }
+            .btn-secondary {
+                padding: 10px 20px;
+                background: #6c757d;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            .btn-secondary:hover {
+                background: #5a6268;
+            }
+        </style>
+
+        <section id="cart-section" style="display: none;">
             <h2>Giỏ Hàng</h2>
             <div id="cartItems"></div>
             <div class="cart-total">
@@ -102,25 +752,12 @@
             <button class="checkout-btn" onclick="checkout()">Đặt Hàng</button>
         </section>
 
-        <section id="orders-section">
-            <h2>Đơn Hàng Của Tôi</h2>
-            <div id="ordersList"></div>
-        </section>
-
-        <section id="points-section">
-            <h2>Điểm Tích Lũy</h2>
-            <div class="points-info">
-                <p>Điểm hiện tại: <span id="currentPoints">0</span></p>
-                <p>1 điểm = 1,000 VNĐ</p>
-                <button onclick="loadPointsHistory()">Xem lịch sử tích điểm</button>
-            </div>
-            <div id="pointsHistory" style="display: none;"></div>
-        </section>
     </main>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="customer.js"></script>
 </body>
 </html>

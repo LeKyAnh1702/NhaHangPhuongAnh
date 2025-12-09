@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhà Cung Cấp - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #8d5524;
+            border-bottom-color: #8d5524;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .debt-filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .debt-summary-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .debt-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        .debt-summary-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .debt-summary-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .debt-summary-table td {
+            padding: 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .debt-summary-table tfoot {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .edit-supplier-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .edit-supplier-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .close-edit-supplier-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-edit-supplier-modal:hover,
+        .close-edit-supplier-modal:focus {
+            color: #000;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .debt-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #8d5524;
+        }
+        .debt-detail-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .debt-detail-balance {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+        .debt-detail-balance.closing {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .debt-detail-table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .debt-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .debt-detail-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .debt-detail-table th,
+        .debt-detail-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .balance-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .balance-input-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .balance-input-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .balance-input-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .balance-input-table td {
+            padding: 12px;
+            font-size: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .balance-input-table input[type="text"],
+        .balance-input-table input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Nhà Cung Cấp</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="suppliers-section">
+            <h2>Quản Lý Nhà Cung Cấp</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchSupplierTab('list')">Danh Sách Nhà Cung Cấp</button>
+                <button class="tab" onclick="switchSupplierTab('add')">Thêm Nhà Cung Cấp</button>
+                <button class="tab" onclick="switchSupplierTab('debt')">Đối Chiếu Công Nợ</button>
+                <button class="tab" onclick="switchSupplierTab('balance')">Nhập Số Dư Đầu Kỳ</button>
+                <button class="tab" onclick="switchSupplierTab('payment')">Thanh Toán</button>
+            </div>
+            
+            <!-- Tab 1: Danh Sách Nhà Cung Cấp -->
+            <div id="tab-supplier-list" class="tab-content active">
+                <div class="suppliers-table-container">
+                    <table class="suppliers-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã Số</th>
+                                <th>Họ Tên</th>
+                                <th>Tên Công Ty</th>
+                                <th>Địa Chỉ</th>
+                                <th>Mã Số Thuế</th>
+                                <th>Số TK Ngân Hàng</th>
+                                <th>Tên Ngân Hàng</th>
+                                <th>Số Điện Thoại</th>
+                                <th>Số Dư Đầu Kỳ</th>
+                                <th>Công Nợ</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suppliersTableBody">
+                            <!-- Danh sách sẽ được load ở đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Thêm Nhà Cung Cấp -->
+            <div id="tab-supplier-add" class="tab-content">
+                <div class="supplier-form-container">
+                    <h3>Thêm Nhà Cung Cấp Mới</h3>
+                    <form id="supplierForm" class="supplier-form">
+                        <div class="form-group">
+                            <label>Mã số nhà cung cấp *</label>
+                            <input type="number" id="supplierCode" placeholder="Tự động tạo (1-1000)" min="1" max="1000" readonly>
+                            <small style="color: #666;">Mã số sẽ được tự động tạo khi lưu</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Họ tên nhà cung cấp *</label>
+                            <input type="text" id="supplierName" placeholder="Nhập họ tên" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tên công ty cung cấp *</label>
+                            <input type="text" id="supplierCompany" placeholder="Nhập tên công ty" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Địa chỉ *</label>
+                            <textarea id="supplierAddress" placeholder="Nhập địa chỉ" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Mã số thuế</label>
+                            <input type="text" id="supplierTaxCode" placeholder="Nhập mã số thuế">
+                        </div>
+                        <div class="form-group">
+                            <label>Số tài khoản ngân hàng</label>
+                            <input type="text" id="supplierBankAccount" placeholder="Nhập số tài khoản">
+                        </div>
+                        <div class="form-group">
+                            <label>Tên ngân hàng</label>
+                            <input type="text" id="supplierBankName" placeholder="Nhập tên ngân hàng">
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại *</label>
+                            <input type="tel" id="supplierPhone" placeholder="Nhập số điện thoại" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Thêm Nhà Cung Cấp</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tab 3: Đối Chiếu Công Nợ -->
+            <div id="tab-supplier-debt" class="tab-content">
+                <div class="supplier-form-container">
+                    <h3>Đối Chiếu Công Nợ Nhà Cung Cấp</h3>
+                    
+                    <!-- Filter Section -->
+                    <div class="debt-filter-section">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>Từ ngày:</label>
+                                <input type="date" id="supplierDebtFromDate" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label>Đến ngày:</label>
+                                <input type="date" id="supplierDebtToDate" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label>Mã số NCC:</label>
+                                <input type="text" id="supplierDebtCodeFilter" class="filter-input" placeholder="Nhập mã số NCC">
+                            </div>
+                            <div class="filter-group">
+                                <label>Tên công ty:</label>
+                                <input type="text" id="supplierDebtNameFilter" class="filter-input" placeholder="Nhập tên công ty">
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button type="button" class="btn-primary" onclick="loadSupplierDebtSummary()">Tìm Kiếm</button>
+                            <button type="button" class="btn-secondary" onclick="resetSupplierDebtFilter()">Xóa Bộ Lọc</button>
+                            <button type="button" class="btn-primary" onclick="printSupplierDebtSummary()">In Bảng Tổng Hợp</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Debt Summary Table -->
+                    <div class="debt-summary-table-container">
+                        <table class="debt-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Số NCC</th>
+                                    <th>Tên Công Ty</th>
+                                    <th>Số Dư Đầu Kỳ</th>
+                                    <th>Phát Sinh Nợ Trong Kỳ</th>
+                                    <th>Đã Trả</th>
+                                    <th>Còn Nợ</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierDebtSummaryTableBody">
+                                <!-- Sẽ được load từ API -->
+                            </tbody>
+                            <tfoot id="supplierDebtSummaryTableFoot">
+                                <!-- Tổng cộng sẽ được thêm ở đây -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Chi Tiết Công Nợ -->
+            <div id="supplierDebtDetailModal" class="modal">
+                <div class="modal-content" style="max-width: 900px;">
+                    <span class="close" onclick="closeSupplierDebtDetailModal()">&times;</span>
+                    <h2 id="supplierDebtDetailModalTitle">Chi Tiết Công Nợ</h2>
+                    
+                    <div class="debt-detail-header">
+                        <div class="debt-detail-info">
+                            <p><strong>Nhà cung cấp:</strong> <span id="supplierDebtDetailName"></span></p>
+                            <p><strong>Mã số NCC:</strong> <span id="supplierDebtDetailCode"></span></p>
+                            <p><strong>Kỳ:</strong> <span id="supplierDebtDetailPeriod"></span></p>
+                        </div>
+                        <div class="debt-detail-actions">
+                            <button type="button" class="btn-primary" onclick="printSupplierDebtDetail()">In Chi Tiết</button>
+                        </div>
+                    </div>
+                    
+                    <div class="debt-detail-balance">
+                        <p><strong>Số dư nợ đầu kỳ:</strong> <span id="supplierDebtDetailOpeningDebt"></span> VNĐ</p>
+                    </div>
+                    
+                    <div class="debt-detail-table-container">
+                        <table class="debt-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Số Chứng Từ</th>
+                                    <th>Ngày Tháng</th>
+                                    <th>Phát Sinh Nợ Trong Kỳ</th>
+                                    <th>Đã Trả</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierDebtDetailTableBody">
+                                <!-- Chi tiết sẽ được load ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="debt-detail-balance closing">
+                        <p><strong>Số dư nợ cuối kỳ:</strong> <span id="supplierDebtDetailClosingDebt"></span> VNĐ</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 4: Nhập Số Dư Đầu Kỳ -->
+            <div id="tab-supplier-balance" class="tab-content">
+                <div class="supplier-form-container">
+                    <h3>Nhập Số Dư Đầu Kỳ Nhà Cung Cấp</h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <button type="button" class="btn-primary" onclick="addSupplierBalanceRow()">+ Thêm Dòng</button>
+                        <button type="button" class="btn-secondary" onclick="saveAllSupplierOpeningBalances()" style="margin-left: 10px;">Lưu Tất Cả</button>
+                        <button type="button" class="btn-secondary" onclick="clearSupplierBalanceTable()" style="margin-left: 10px;">Xóa Tất Cả</button>
+                    </div>
+                    
+                    <div class="balance-table-container">
+                        <table class="balance-input-table balance-row-counter">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Số NCC</th>
+                                    <th>Tên Công Ty</th>
+                                    <th>Địa Chỉ</th>
+                                    <th>Nhập Số Dư Đầu Kỳ</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierBalanceInputTableBody">
+                                <!-- Các dòng sẽ được thêm ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 5: Thanh Toán -->
+            <div id="tab-supplier-payment" class="tab-content">
+                <div class="payment-section">
+                    <h3>Quản Lý Thanh Toán Nhà Cung Cấp</h3>
+                    
+                    <!-- Search Bar -->
+                    <div class="search-bar" style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="supplierPaymentSearch" placeholder="Tìm kiếm theo Mã số, Tên, SĐT..." 
+                               style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <button class="btn-primary" onclick="searchSupplierPayment()">Tìm Kiếm</button>
+                        <button class="btn-secondary" onclick="resetSupplierPaymentSearch()">Xóa Bộ Lọc</button>
+                    </div>
+                    
+                    <!-- Suppliers Table -->
+                    <div class="suppliers-table-container">
+                        <table class="suppliers-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Số</th>
+                                    <th>Tên NCC</th>
+                                    <th>SĐT</th>
+                                    <th>Dư Nợ</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplierPaymentTableBody">
+                                <!-- Danh sách sẽ được load ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Phát Sinh Nợ Nhà Cung Cấp -->
+    <div id="addSupplierDebtModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="closeAddSupplierDebtModal()">&times;</span>
+            <h2>Phát Sinh Nợ</h2>
+            <form id="addSupplierDebtForm">
+                <input type="hidden" id="addSupplierDebtSupplierId">
+                <div class="form-group">
+                    <label>Nhà cung cấp:</label>
+                    <input type="text" id="addSupplierDebtSupplierName" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Mã số NCC:</label>
+                    <input type="text" id="addSupplierDebtSupplierCode" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Dư nợ hiện tại:</label>
+                    <input type="text" id="addSupplierDebtCurrentDebt" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Số tiền phát sinh nợ *</label>
+                    <input type="number" id="addSupplierDebtAmount" min="0" step="1000" required placeholder="Nhập số tiền">
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <textarea id="addSupplierDebtNote" rows="3" placeholder="Ghi chú (tùy chọn)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Xác Nhận</button>
+                    <button type="button" class="btn-secondary" onclick="closeAddSupplierDebtModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Thanh Toán Dư Nợ Nhà Cung Cấp -->
+    <div id="paySupplierDebtModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="closePaySupplierDebtModal()">&times;</span>
+            <h2>Thanh Toán Dư Nợ</h2>
+            <form id="paySupplierDebtForm">
+                <input type="hidden" id="paySupplierDebtSupplierId">
+                <div class="form-group">
+                    <label>Nhà cung cấp:</label>
+                    <input type="text" id="paySupplierDebtSupplierName" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Mã số NCC:</label>
+                    <input type="text" id="paySupplierDebtSupplierCode" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Dư nợ hiện tại:</label>
+                    <input type="text" id="paySupplierDebtCurrentDebt" readonly style="background: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label>Số tiền thanh toán *</label>
+                    <input type="number" id="paySupplierDebtAmount" min="0" step="1000" required placeholder="Nhập số tiền">
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú</label>
+                    <textarea id="paySupplierDebtNote" rows="3" placeholder="Ghi chú (tùy chọn)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Xác Nhận Thanh Toán</button>
+                    <button type="button" class="btn-secondary" onclick="closePaySupplierDebtModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal In Phiếu Thu Nhà Cung Cấp -->
+    <div id="printSupplierReceiptModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closePrintSupplierReceiptModal()">&times;</span>
+            <div class="print-content" id="supplierReceiptPrintContent">
+                <!-- Nội dung phiếu thu sẽ được load ở đây -->
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" class="btn-primary" onclick="printSupplierReceipt()">In Phiếu Thu</button>
+                <button type="button" class="btn-secondary" onclick="closePrintSupplierReceiptModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa Nhà Cung Cấp -->
+    <div id="editSupplierModal" class="edit-supplier-modal">
+        <div class="edit-supplier-modal-content">
+            <span class="close-edit-supplier-modal" onclick="closeEditSupplierModal()">&times;</span>
+            <h2 style="color: #8d5524; margin-top: 0;">Sửa Thông Tin Nhà Cung Cấp</h2>
+            <form id="editSupplierForm" class="supplier-form">
+                <input type="hidden" id="editSupplierId">
+                
+                <div class="form-group">
+                    <label for="editSupplierCode">Mã số NCC</label>
+                    <input type="text" id="editSupplierCode" readonly style="background: #f5f5f5;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierName">Họ tên nhà cung cấp *</label>
+                    <input type="text" id="editSupplierName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierCompany">Tên công ty cung cấp *</label>
+                    <input type="text" id="editSupplierCompany" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierAddress">Địa chỉ *</label>
+                    <textarea id="editSupplierAddress" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierTaxCode">Mã số thuế</label>
+                    <input type="text" id="editSupplierTaxCode">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierBankAccount">Số tài khoản ngân hàng</label>
+                    <input type="text" id="editSupplierBankAccount">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierBankName">Tên ngân hàng</label>
+                    <input type="text" id="editSupplierBankName">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSupplierPhone">Số điện thoại *</label>
+                    <input type="tel" id="editSupplierPhone" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Lưu Thay Đổi</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditSupplierModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

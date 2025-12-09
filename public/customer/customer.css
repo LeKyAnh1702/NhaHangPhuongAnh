@@ -1,3 +1,27 @@
+.menu-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.menu-tabs button {
+    padding: 12px 24px;
+    background: #f0f0f0;
+    color: #333;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.menu-tabs button:hover {
+    background: #e0e0e0;
+}
+.menu-tabs button.active {
+    background: #8d5524;
+    color: white;
+    border-color: #8d5524;
+}
 .search-bar {
     display: flex;
     gap: 12px;

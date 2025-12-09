@@ -35,12 +35,80 @@ app.get('/customer', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'customer', 'index.html'));
 });
 
+app.get('/order-online', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'order-online.html'));
+});
+
 app.get('/manager', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'manager', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'dashboard.html'));
+});
+
+app.get('/manager/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'dashboard.html'));
+});
+
+app.get('/manager/customers', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'customers.html'));
+});
+
+app.get('/manager/orders', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'orders.html'));
+});
+
+app.get('/manager/menu', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'menu.html'));
+});
+
+app.get('/manager/tables', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'tables.html'));
+});
+
+app.get('/manager/search', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'search.html'));
+});
+
+app.get('/manager/reports', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'reports.html'));
+});
+
+app.get('/manager/inventory-alerts', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'inventory-alerts.html'));
+});
+
+app.get('/manager/vouchers', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manager', 'vouchers.html'));
 });
 
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
+});
+
+app.get('/admin/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
+});
+
+app.get('/admin/import', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'import.html'));
+});
+
+app.get('/admin/export', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'export.html'));
+});
+
+app.get('/admin/inventory-balance', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'inventory-balance.html'));
+});
+
+app.get('/admin/users', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'users.html'));
+});
+
+app.get('/admin/suppliers', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'suppliers.html'));
+});
+
+app.get('/admin/materials', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'materials.html'));
 });
 
 app.listen(PORT, () => {

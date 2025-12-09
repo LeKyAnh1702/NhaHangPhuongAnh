@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tồn Kho - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Tồn Kho</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+                <li><a href="/admin/import">Nhập Kho</a></li>
+                <li><a href="/admin/export">Xuất Kho</a></li>
+                <li><a href="/admin/inventory-balance">Tồn Kho</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation" style="margin-bottom: 24px; border-bottom: 2px solid #8d5524;">
+            <button class="tab-btn active" onclick="switchInventoryTab('balance')">Bảng Kê Tồn Kho</button>
+            <button class="tab-btn" onclick="switchInventoryTab('opening')">Nhập Số Dư Đầu Kỳ</button>
+            <button class="tab-btn" onclick="switchInventoryTab('view-opening')">Xem Số Dư Đầu Kỳ</button>
+        </div>
+
+        <!-- Bảng Kê Tồn Kho Tab -->
+        <section id="inventory-balance-section" class="inventory-tab-content">
+            <h2>Bảng Kê Cân Đối Nguyên Vật Liệu Tồn Kho</h2>
+            
+            <div class="action-buttons" style="margin-bottom: 24px;">
+                <button class="btn-secondary" onclick="window.location.href='/admin/import'">Nhập Kho</button>
+                <button class="btn-secondary" onclick="window.location.href='/admin/export'">Xuất Kho</button>
+                <button class="btn-primary" onclick="loadInventoryBalance()">Tải Dữ Liệu</button>
+            </div>
+            
+            <!-- Tìm kiếm và lọc -->
+            <div class="balance-search-container">
+                <div class="search-filters">
+                    <div class="form-group">
+                        <label>Từ ngày:</label>
+                        <input type="date" id="balanceFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Đến ngày:</label>
+                        <input type="date" id="balanceToDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên nguyên vật liệu:</label>
+                        <input type="text" id="balanceMaterialName" placeholder="Nhập tên nguyên vật liệu">
+                    </div>
+                    <div class="form-group">
+                        <label>Mã số nguyên vật liệu:</label>
+                        <input type="text" id="balanceMaterialCode" placeholder="Nhập mã số">
+                    </div>
+                    <button class="btn-primary" onclick="loadInventoryBalance()">Tìm Kiếm</button>
+                    <button class="btn-secondary" onclick="resetBalanceSearch()">Xóa Bộ Lọc</button>
+                    <button class="btn-primary" onclick="printInventoryBalance()">In Bảng Kê</button>
+                </div>
+            </div>
+            
+            <!-- Bảng tồn kho -->
+            <div class="balance-table-container">
+                <table class="inventory-balance-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Mã Số</th>
+                            <th rowspan="2">Tên Nguyên Vật Liệu</th>
+                            <th rowspan="2">Đơn Vị Tính</th>
+                            <th colspan="3">Dư Đầu Kỳ</th>
+                            <th colspan="3">Nhập Trong Kỳ</th>
+                            <th colspan="3">Xuất Trong Kỳ</th>
+                            <th colspan="3">Tồn Cuối Kỳ</th>
+                        </tr>
+                        <tr>
+                            <th>SL</th>
+                            <th>ĐG</th>
+                            <th>TT</th>
+                            <th>SL</th>
+                            <th>ĐG</th>
+                            <th>TT</th>
+                            <th>SL</th>
+                            <th>ĐG</th>
+                            <th>TT</th>
+                            <th>SL</th>
+                            <th>ĐG</th>
+                            <th>TT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBalanceTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Nhập Số Dư Đầu Kỳ Tab -->
+        <section id="opening-balance-section" class="inventory-tab-content" style="display: none;">
+            <h2>Nhập Số Dư Đầu Kỳ</h2>
+            
+            <div class="action-buttons" style="margin-bottom: 24px;">
+                <button class="btn-primary" onclick="loadMaterialsForOpeningBalance()">Tải Danh Sách NVL</button>
+                <button class="btn-primary" onclick="saveOpeningBalance()">Lưu Số Dư Đầu Kỳ</button>
+                <button class="btn-secondary" onclick="resetOpeningBalanceForm()">Làm Mới</button>
+            </div>
+
+            <div class="opening-balance-table-container">
+                <table class="opening-balance-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Số</th>
+                            <th>Tên NVL</th>
+                            <th>Đơn Vị Tính</th>
+                            <th>SL</th>
+                            <th>ĐG</th>
+                            <th>TT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="openingBalanceTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Xem Số Dư Đầu Kỳ Tab -->
+        <section id="view-opening-balance-section" class="inventory-tab-content" style="display: none;">
+            <h2>Xem Số Dư Đầu Kỳ</h2>
+            
+            <div class="action-buttons" style="margin-bottom: 24px;">
+                <button class="btn-primary" onclick="loadOpeningBalanceView()">Tải Dữ Liệu</button>
+                <button class="btn-secondary" onclick="resetOpeningBalanceSearch()">Xóa Bộ Lọc</button>
+            </div>
+
+            <!-- Tìm kiếm -->
+            <div class="balance-search-container">
+                <div class="search-filters">
+                    <div class="form-group">
+                        <label>Mã Số NVL:</label>
+                        <input type="text" id="openingBalanceSearchCode" placeholder="Nhập mã số">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên NVL:</label>
+                        <input type="text" id="openingBalanceSearchName" placeholder="Nhập tên nguyên vật liệu">
+                    </div>
+                    <button class="btn-primary" onclick="loadOpeningBalanceView()">Tìm Kiếm</button>
+                </div>
+            </div>
+
+            <div class="opening-balance-table-container">
+                <table class="opening-balance-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Số</th>
+                            <th>Tên NVL</th>
+                            <th>Đơn Vị Tính</th>
+                            <th>SL</th>
+                            <th>ĐG</th>
+                            <th>TT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="viewOpeningBalanceTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // Load tồn kho khi trang được tải
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInventoryBalance();
+        });
+    </script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

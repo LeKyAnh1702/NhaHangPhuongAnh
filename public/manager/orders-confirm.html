@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác Nhận Đơn Hàng - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Xác Nhận Đơn Hàng</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="confirm-orders-section">
+            <h2>Xác Nhận Đơn Đặt Hàng</h2>
+            
+            <div class="filter-bar" style="margin-bottom: 20px;">
+                <select id="orderStatusFilter">
+                    <option value="pending">Chờ xác nhận</option>
+                    <option value="all">Tất cả</option>
+                </select>
+                <input type="date" id="orderDateFilter">
+                <button class="btn-primary" onclick="loadPendingOrders()">Làm Mới</button>
+            </div>
+            
+            <div class="orders-table-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Đơn</th>
+                            <th>Khách Hàng</th>
+                            <th>Ngày Đặt</th>
+                            <th>Số Bàn</th>
+                            <th>Tổng Tiền</th>
+                            <th>Trạng Thái</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingOrdersTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="manager.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Voucher và Tích Điểm - Manager</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+    <style>
+        .vouchers-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .vouchers-title {
+            text-align: center;
+            color: #8d5524;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+        .customers-table-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .customers-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        .customers-table thead {
+            background: #8d5524;
+            color: white;
+        }
+        .customers-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .customers-table th:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        .customers-table th:nth-child(2) {
+            width: 100px;
+        }
+        .customers-table th:nth-child(3) {
+            width: 150px;
+        }
+        .customers-table th:nth-child(4) {
+            width: 130px;
+        }
+        .customers-table th:nth-child(5) {
+            width: 200px;
+        }
+        .customers-table th:nth-child(6) {
+            width: 120px;
+        }
+        .customers-table th:nth-child(7) {
+            width: 150px;
+        }
+        .customers-table th:nth-child(8) {
+            width: 100px;
+            text-align: center;
+        }
+        .customers-table th:nth-child(9) {
+            width: 150px;
+            text-align: right;
+        }
+        .customers-table th:nth-child(10) {
+            width: 130px;
+            text-align: right;
+        }
+        .customers-table th:last-child {
+            width: 200px;
+            text-align: center;
+        }
+        .customers-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+        }
+        .customers-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .customers-table td {
+            padding: 12px;
+            font-size: 14px;
+            color: #333;
+        }
+        .customers-table td:first-child {
+            text-align: center;
+            font-weight: 500;
+        }
+        .customers-table td:nth-child(2) {
+            font-weight: 600;
+            color: #8d5524;
+        }
+        .customers-table td:nth-child(8) {
+            text-align: center;
+            font-weight: 500;
+        }
+        .customers-table td:nth-child(9) {
+            text-align: right;
+            font-weight: 500;
+            color: #8d5524;
+        }
+        .customers-table td:nth-child(10) {
+            text-align: right;
+            font-weight: 500;
+            color: #8d5524;
+        }
+        .customers-table td:last-child {
+            text-align: center;
+        }
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #8d5524;
+            box-shadow: 0 0 0 2px rgba(141, 85, 36, 0.1);
+        }
+        .btn-primary, .btn-secondary {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #8d5524;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #6d3f1a;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-redeem {
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin: 0 2px;
+        }
+        .btn-redeem:hover {
+            background: #218838;
+        }
+        .btn-redeem:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .points-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #8d5524;
+            color: white;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .voucher-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .voucher-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .close-voucher-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-voucher-modal:hover,
+        .close-voucher-modal:focus {
+            color: #000;
+        }
+        .voucher-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .voucher-info p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .voucher-options {
+            margin: 20px 0;
+        }
+        .voucher-option {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voucher-option:hover {
+            border-color: #8d5524;
+            background: #fff8f0;
+        }
+        .voucher-option.selected {
+            border-color: #8d5524;
+            background: #fff8f0;
+        }
+        .voucher-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .voucher-option h4 {
+            margin: 0 0 5px 0;
+            color: #8d5524;
+        }
+        .voucher-option p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .info-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info-section h3 {
+            color: #8d5524;
+            margin-top: 0;
+        }
+        .info-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info-section li {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Voucher và Tích Điểm</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="vouchers-container">
+            <h1 class="vouchers-title">Quản Lý Voucher và Tích Điểm</h1>
+            
+            <div class="info-section">
+                <h3>Thông tin về hệ thống tích điểm và voucher</h3>
+                <ul>
+                    <li><strong>Điều kiện để có voucher:</strong>
+                        <ul>
+                            <li>Số hóa đơn phải đạt từ 10 trở lên</li>
+                            <li>Tổng doanh số của hóa đơn đạt 5 triệu đồng trở lên</li>
+                        </ul>
+                    </li>
+                    <li><strong>Tích điểm:</strong> Khách hàng thanh toán hóa đơn 200 nghìn đồng sẽ nhận được 1 điểm tích lũy</li>
+                    <li><strong>Đổi voucher:</strong> Đạt đủ 50 điểm sẽ được quy đổi ra voucher trị giá 500.000 VNĐ</li>
+                    <li><strong>Tích lũy điểm:</strong> Số điểm cao hơn 50 sẽ được tích lũy cho kỳ sau</li>
+                    <li><strong>Lưu ý:</strong> Voucher sẽ áp dụng cho hóa đơn tiếp theo, không được quy đổi ra tiền mặt</li>
+                </ul>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="searchCustomerInput" placeholder="Tìm kiếm khách hàng theo mã số, tên, số điện thoại...">
+                <button class="btn-primary" onclick="searchCustomers()">Tìm Kiếm</button>
+                <button class="btn-secondary" onclick="resetCustomerSearch()">Xóa Bộ Lọc</button>
+            </div>
+            
+            <div class="customers-table-container">
+                <table class="customers-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Số KH</th>
+                            <th>Họ và Tên</th>
+                            <th>CCCD</th>
+                            <th>Địa Chỉ</th>
+                            <th>Số Điện Thoại</th>
+                            <th>Công Ty/Đơn Vị</th>
+                            <th>Tổng số HĐ</th>
+                            <th>Tổng tiền TT</th>
+                            <th>Điểm Tích Lũy</th>
+                            <th>Số lượng Voucher</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Đổi Voucher -->
+    <div id="redeemVoucherModal" class="voucher-modal">
+        <div class="voucher-modal-content">
+            <span class="close-voucher-modal" onclick="closeRedeemVoucherModal()">&times;</span>
+            <h2 style="color: #8d5524; margin-top: 0;">Đổi Voucher</h2>
+            
+            <div class="voucher-info">
+                <p><strong>Khách hàng:</strong> <span id="redeemCustomerName"></span></p>
+                <p><strong>Mã số KH:</strong> <span id="redeemCustomerCode"></span></p>
+                <p><strong>Điểm tích lũy hiện tại:</strong> <span id="redeemCurrentPoints" class="points-badge">0</span></p>
+            </div>
+            
+            <div class="voucher-options">
+                <div class="voucher-option selected" data-points="50">
+                    <h4>Voucher Trị Giá 500.000 VNĐ</h4>
+                    <p>Đổi bằng <strong>50 điểm</strong> tích lũy</p>
+                    <p style="color: #8d5524; font-weight: bold; margin-top: 10px;">Voucher sẽ áp dụng cho hóa đơn tiếp theo, không được quy đổi ra tiền mặt</p>
+                </div>
+            </div>
+            
+            <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn-primary" onclick="confirmRedeemVoucher()">Xác Nhận Đổi</button>
+                <button type="button" class="btn-secondary" onclick="closeRedeemVoucherModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="vouchers.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

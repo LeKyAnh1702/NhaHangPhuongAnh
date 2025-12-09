@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thực Đơn - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Thực Đơn</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="menu-section">
+            <h2>Quản Lý Thực Đơn</h2>
+            <button class="btn-primary" onclick="showMenuModal()">Thêm Món</button>
+            <div id="menuList"></div>
+        </section>
+    </main>
+
+    <!-- Menu Modal -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMenuModal()">&times;</span>
+            <h2>Thêm Món/Combo</h2>
+            <form id="menuForm">
+                <input type="text" placeholder="Tên món" required>
+                <textarea placeholder="Mô tả"></textarea>
+                <input type="number" placeholder="Giá" required>
+                <input type="text" placeholder="Danh mục">
+                <input type="url" placeholder="URL hình ảnh">
+                <label><input type="checkbox" id="isCombo"> Là combo</label>
+                <div id="comboItems" style="display: none;"></div>
+                <button type="submit">Thêm món</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

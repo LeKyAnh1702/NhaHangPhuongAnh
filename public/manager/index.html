@@ -3,70 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý - Nhà Hàng Phương Anh</title>
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="manager.css">
+    <title>Quản lý - Nhà Hàng Phương Anh</title>
+    <script>
+        // Redirect to dashboard
+        window.location.href = '/manager/dashboard';
+    </script>
 </head>
 <body>
-    <header>
-        <div class="logo">Nhà Hàng Phương Anh - Quản Lý</div>
-        <nav>
-            <ul>
-                <li><a href="/">Trang Chủ</a></li>
-                <li><a href="#orders">Đơn Hàng</a></li>
-                <li><a href="#inventory">Kho Hàng</a></li>
-                <li><a href="#reports">Báo Cáo</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="orders-section">
-            <h2>Quản Lý Đơn Hàng</h2>
-            <div class="search-bar">
-                <input type="text" id="searchOrderInput" placeholder="Tìm kiếm đơn hàng...">
-                <button onclick="searchOrders()">Tìm kiếm</button>
-            </div>
-            <button class="btn-primary" onclick="showCreateOrderModal()">Tạo Đơn Hàng Mới</button>
-            <div id="ordersList"></div>
-        </section>
-
-        <section id="inventory-section">
-            <h2>Quản Lý Kho Hàng</h2>
-            <div id="inventoryList"></div>
-            <div id="inventoryWarnings"></div>
-        </section>
-
-        <section id="reports-section">
-            <h2>Báo Cáo Bán Hàng</h2>
-            <div class="report-filters">
-                <input type="date" id="startDate">
-                <input type="date" id="endDate">
-                <button onclick="generateReport()">Tạo Báo Cáo</button>
-            </div>
-            <div id="reportResults"></div>
-        </section>
-    </main>
-
-    <!-- Create Order Modal -->
-    <div id="createOrderModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCreateOrderModal()">&times;</span>
-            <h2>Tạo Đơn Hàng Mới</h2>
-            <form id="createOrderForm">
-                <input type="text" placeholder="Tên khách hàng" required>
-                <input type="tel" placeholder="Số điện thoại" required>
-                <input type="number" placeholder="Số bàn" id="tableNumber">
-                <div id="orderItems"></div>
-                <button type="button" onclick="addOrderItem()">Thêm món</button>
-                <button type="submit">Tạo đơn</button>
-            </form>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <script src="manager.js"></script>
+    <p>Đang chuyển hướng đến Quản lý...</p>
+    <p>Nếu không tự động chuyển, <a href="/manager/dashboard">click vào đây</a>.</p>
 </body>
 </html>
-
-

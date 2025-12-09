@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Quản lý - Nhà Hàng Phương Anh</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .dashboard-title {
+            text-align: center;
+            color: #8d5524;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+        .management-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        .management-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .management-card h3 {
+            color: #8d5524;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .management-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .management-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="dashboard-container">
+            <h1 class="dashboard-title">Quản Lý Hệ Thống</h1>
+            
+            <div class="management-grid">
+                <div class="management-card" onclick="window.location.href='/admin/users'">
+                    <div class="management-icon">👥</div>
+                    <h3>Quản Lý Người Dùng</h3>
+                    <p>Quản lý thông tin người dùng, phân quyền</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/admin/suppliers'">
+                    <div class="management-icon">🏢</div>
+                    <h3>Quản Lý Nhà Cung Cấp</h3>
+                    <p>Quản lý thông tin nhà cung cấp</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/admin/materials'">
+                    <div class="management-icon">📦</div>
+                    <h3>Quản Lý Nguyên Vật Liệu</h3>
+                    <p>Quản lý danh mục nguyên vật liệu</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/admin/import'">
+                    <div class="management-icon">⬇️</div>
+                    <h3>Nhập Kho</h3>
+                    <p>Quản lý phiếu nhập kho</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/admin/export'">
+                    <div class="management-icon">⬆️</div>
+                    <h3>Xuất Kho</h3>
+                    <p>Quản lý phiếu xuất kho</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/admin/inventory-balance'">
+                    <div class="management-icon">📊</div>
+                    <h3>Tồn Kho</h3>
+                    <p>Bảng kê cân đối nguyên vật liệu tồn kho</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

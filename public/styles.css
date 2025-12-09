@@ -251,12 +251,16 @@ button[type="submit"]:hover {
 }
 .modal-content {
     background-color: white;
-    margin: 10% auto;
+    margin: 5% auto;
     padding: 30px;
     border-radius: 12px;
     width: 90%;
-    max-width: 400px;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    position: relative;
 }
 .modal-content .close {
     color: #aaa;

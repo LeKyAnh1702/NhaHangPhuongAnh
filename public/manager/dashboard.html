@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Quản lý - Nhà Hàng Phương Anh</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="manager.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .dashboard-title {
+            text-align: center;
+            color: #8d5524;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+        .management-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        .management-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .management-card h3 {
+            color: #8d5524;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .management-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .management-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .alert-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .management-card {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/manager/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="dashboard-container">
+            <h1 class="dashboard-title">Quản Lý Nhà Hàng</h1>
+            
+            <div class="management-grid">
+                <div class="management-card" onclick="window.location.href='/manager/customers'">
+                    <div class="management-icon">👥</div>
+                    <h3>Quản Lý Khách Hàng</h3>
+                    <p>Quản lý thông tin khách hàng, người mua</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/manager/orders'" style="position: relative;">
+                    <div class="management-icon">📋</div>
+                    <h3>Quản Lý Đơn Hàng</h3>
+                    <p>Xác nhận, tạo và cập nhật đơn hàng</p>
+                    <span id="pendingOrdersBadge" class="alert-badge" style="display: none;">0</span>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/manager/menu'">
+                    <div class="management-icon">🍽️</div>
+                    <h3>Quản Lý Thực Đơn</h3>
+                    <p>Quản lý món ăn và combo</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/manager/tables'">
+                    <div class="management-icon">🪑</div>
+                    <h3>Quản Lý Bàn Ăn</h3>
+                    <p>Quản lý thông tin bàn ăn</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/manager/vouchers'">
+                    <div class="management-icon">🎫</div>
+                    <h3>Quản Lý Voucher và Tích Điểm</h3>
+                    <p>Quản lý voucher và điểm tích lũy khách hàng</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/manager/reports'">
+                    <div class="management-icon">📊</div>
+                    <h3>Thống Kê & Báo Cáo</h3>
+                    <p>Báo cáo bán hàng theo thời gian, bàn, món</p>
+                </div>
+                
+                <div class="management-card" onclick="window.location.href='/manager/inventory-alerts'">
+                    <div class="management-icon">⚠️</div>
+                    <h3>Cảnh Báo Tồn Kho</h3>
+                    <p id="inventoryAlertCount">Kiểm tra tồn kho</p>
+                    <span id="inventoryAlertBadge" class="alert-badge" style="display: none;">0</span>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="manager.js"></script>
+    <script>
+        // Load inventory alerts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkInventoryAlerts();
+        });
+        
+        async function checkInventoryAlerts() {
+            try {
+                const response = await fetch('/api/manager/inventory-alerts');
+                const data = await response.json();
+                
+                if (data.success && data.alerts && data.alerts.length > 0) {
+                    const badge = document.getElementById('inventoryAlertBadge');
+                    const count = document.getElementById('inventoryAlertCount');
+                    badge.textContent = data.alerts.length;
+                    badge.style.display = 'flex';
+                    count.textContent = `${data.alerts.length} cảnh báo tồn kho`;
+                }
+            } catch (error) {
+                console.error('Error checking inventory alerts:', error);
+            }
+        }
+        
+        async function checkPendingOrders() {
+            try {
+                const response = await fetch('/api/manager/orders/pending/count');
+                const data = await response.json();
+                
+                if (data.success && data.count > 0) {
+                    const badge = document.getElementById('pendingOrdersBadge');
+                    badge.textContent = data.count;
+                    badge.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error checking pending orders:', error);
+            }
+        }
+        
+        // Load pending orders count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkPendingOrders();
+            // Refresh every 30 seconds
+            setInterval(checkPendingOrders, 30000);
+        });
+    </script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

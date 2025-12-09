@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nguyên Vật Liệu - Admin</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh - Quản Lý Nguyên Vật Liệu</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+                <li><a href="/admin/dashboard">Quản lý</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="materials-section">
+            <h2>Quản Lý Nguyên Vật Liệu</h2>
+            <button class="btn-primary" onclick="showMaterialForm()">Thêm Nguyên Vật Liệu Mới</button>
+            
+            <!-- Form nhập liệu nguyên vật liệu -->
+            <div class="material-form-container">
+                <h4>Thêm Nguyên Vật Liệu Mới</h4>
+                <form id="materialForm" class="material-form">
+                    <div class="form-group">
+                        <label>Mã số nguyên vật liệu *</label>
+                        <input type="text" id="materialCode" placeholder="Tự động tạo" readonly>
+                        <small style="color: #666;">Mã số sẽ được tự động tạo khi lưu</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Tên nguyên vật liệu *</label>
+                        <input type="text" id="materialName" placeholder="Nhập tên nguyên vật liệu" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Đơn vị tính *</label>
+                        <select id="materialUnit" required>
+                            <option value="">-- Chọn đơn vị tính --</option>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="g">Gram (g)</option>
+                            <option value="l">Lít (l)</option>
+                            <option value="ml">Mililit (ml)</option>
+                            <option value="thùng">Thùng</option>
+                            <option value="túi">Túi</option>
+                            <option value="gói">Gói</option>
+                            <option value="hộp">Hộp</option>
+                            <option value="chai">Chai</option>
+                            <option value="lon">Lon</option>
+                            <option value="cái">Cái</option>
+                            <option value="bộ">Bộ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quy cách đóng gói *</label>
+                        <input type="text" id="materialPackage" placeholder="Ví dụ: 500g/gói, 1kg/thùng" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Thêm Nguyên Vật Liệu</button>
+                </form>
+            </div>
+            
+            <!-- Danh sách nguyên vật liệu -->
+            <div class="materials-table-container">
+                <h4>Danh Sách Nguyên Vật Liệu</h4>
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Số</th>
+                            <th>Tên Nguyên Vật Liệu</th>
+                            <th>Đơn Vị Tính</th>
+                            <th>Quy Cách Đóng Gói</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materialsTableBody">
+                        <!-- Danh sách sẽ được load ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+    <script src="auth-check.js"></script>
+</body>
+</html>
+

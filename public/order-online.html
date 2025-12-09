@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Hàng Online - Nhà Hàng Phương Anh</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .order-online-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .welcome-message {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .welcome-message.returning {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        .welcome-message.new {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 2px solid #2196f3;
+        }
+        .customer-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input {
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #8d5524;
+            box-shadow: 0 0 0 2px rgba(141, 85, 36, 0.1);
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .btn-primary {
+            flex: 1;
+            padding: 12px 24px;
+            background: #8d5524;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-primary:hover {
+            background: #6d3f1a;
+        }
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Nhà Hàng Phương Anh</div>
+        <nav>
+            <ul>
+                <li><a href="/">Trang Chủ</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="order-online-container">
+            <h1 style="text-align: center; color: #8d5524; margin-bottom: 30px;">Đặt Hàng Online</h1>
+            
+            <div id="welcomeMessage" class="welcome-message" style="display: none;">
+                <!-- Sẽ được hiển thị sau khi kiểm tra -->
+            </div>
+            
+            <form id="customerInfoForm" class="customer-form">
+                <div class="form-group">
+                    <label for="customerPhone">Số điện thoại *</label>
+                    <input type="tel" id="customerPhone" placeholder="Nhập số điện thoại" required 
+                           onblur="checkCustomerPhone()" oninput="clearWelcomeMessage()">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Tiếp Tục</button>
+                    <button type="button" class="btn-secondary" onclick="window.location.href='/'">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <script>
+        let currentCustomer = null;
+        
+        // Xóa thông báo khi người dùng bắt đầu nhập lại
+        function clearWelcomeMessage() {
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (welcomeMessage) {
+                welcomeMessage.style.display = 'none';
+            }
+            currentCustomer = null;
+        }
+        
+        // Kiểm tra số điện thoại khi người dùng rời khỏi ô input
+        async function checkCustomerPhone() {
+            let phone = document.getElementById('customerPhone').value.trim();
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            if (!phone) {
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = 'none';
+                }
+                currentCustomer = null;
+                return;
+            }
+            
+            // Loại bỏ các ký tự không phải số (giữ lại dấu + nếu có ở đầu)
+            phone = phone.replace(/[^\d+]/g, '');
+            
+            // Nếu bắt đầu bằng +84, chuyển thành 0
+            if (phone.startsWith('+84')) {
+                phone = '0' + phone.substring(3);
+            }
+            
+            // Kiểm tra số điện thoại có ít nhất 10 chữ số
+            if (phone.length < 10 || phone.length > 11) {
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = 'none';
+                }
+                currentCustomer = null;
+                return;
+            }
+            
+            // Cập nhật lại giá trị trong input
+            document.getElementById('customerPhone').value = phone;
+            
+            try {
+                const url = `/api/customer/check?phone=${encodeURIComponent(phone)}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    // Nếu response không OK, thử parse JSON để lấy error message
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+                    }
+                    console.error('API Error:', errorData);
+                    // Mặc định hiển thị thông báo cho khách hàng mới
+                    currentCustomer = null;
+                    if (welcomeMessage) {
+                        welcomeMessage.className = 'welcome-message new';
+                        welcomeMessage.textContent = 'Chào mừng quý khách đến với Nhà Hàng Phương Anh';
+                        welcomeMessage.style.display = 'block';
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.customer) {
+                    // Khách hàng đã có trong hệ thống
+                    currentCustomer = data.customer;
+                    if (welcomeMessage) {
+                        welcomeMessage.className = 'welcome-message returning';
+                        welcomeMessage.innerHTML = `Chào mừng quý khách trở lại<br><strong>${data.customer.name || 'Khách hàng'}</strong>`;
+                        welcomeMessage.style.display = 'block';
+                    }
+                } else {
+                    // Khách hàng mới
+                    currentCustomer = null;
+                    if (welcomeMessage) {
+                        welcomeMessage.className = 'welcome-message new';
+                        welcomeMessage.textContent = 'Chào mừng quý khách đến với Nhà Hàng Phương Anh';
+                        welcomeMessage.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking customer:', error);
+                // Mặc định hiển thị thông báo cho khách hàng mới
+                currentCustomer = null;
+                if (welcomeMessage) {
+                    welcomeMessage.className = 'welcome-message new';
+                    welcomeMessage.textContent = 'Chào mừng quý khách đến với Nhà Hàng Phương Anh';
+                    welcomeMessage.style.display = 'block';
+                }
+            }
+        }
+        
+        // Xử lý form submit
+        document.getElementById('customerInfoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('customerPhone').value.trim();
+            
+            if (!phone) {
+                alert('Vui lòng nhập số điện thoại');
+                return;
+            }
+            
+            // Kiểm tra lại nếu chưa kiểm tra
+            if (!currentCustomer) {
+                await checkCustomerPhone();
+            }
+            
+            // Lưu số điện thoại vào sessionStorage
+            sessionStorage.setItem('customerPhone', phone);
+            
+            // Lưu thông tin khách hàng nếu là khách hàng cũ
+            if (currentCustomer) {
+                sessionStorage.setItem('customerId', currentCustomer.id);
+                sessionStorage.setItem('customerName', currentCustomer.name || '');
+            }
+            
+            // Chuyển đến trang đặt hàng
+            window.location.href = '/customer';
+        });
+        
+        // Kiểm tra khi load trang nếu đã có thông tin
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedPhone = sessionStorage.getItem('customerPhone');
+            
+            if (savedPhone) {
+                document.getElementById('customerPhone').value = savedPhone;
+                // Tự động kiểm tra khi load lại trang
+                setTimeout(() => {
+                    checkCustomerPhone();
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
+

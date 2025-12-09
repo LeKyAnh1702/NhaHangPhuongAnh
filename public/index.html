@@ -196,9 +196,9 @@ Nhà Hàng Phương Anh, nơi bạn có thể trải nghiệm những món ăn �
       <span class="lightbox-close" id="lightbox-close">&times;</span>
       <img class="lightbox-img" id="lightbox-img" src="" alt="Phóng to ảnh">
     </div>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script>
     // Firebase configuration
     const firebaseConfig = {
@@ -227,15 +227,20 @@ Nhà Hàng Phương Anh, nơi bạn có thể trải nghiệm những món ăn �
     
     // Account mapping
     const accounts = {
-        'lekyanh123': { email: 'admin@nhahangphuonganh.com', role: 'admin' },
-        'lekyanh172': { email: 'manager@nhahangphuonganh.com', role: 'manager' }
+        'admin': { email: 'admin@nhahangphuonganh.com', role: 'admin', password: 'nhahangphuonganh' },
+        'manager': { email: 'manager@nhahangphuonganh.com', role: 'manager', password: 'nhahangphuonganh' }
     };
     
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const username = document.getElementById('loginUsername').value;
+        const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
         const errorDiv = document.getElementById('loginError');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        
+        // Reset error
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
         
         if (!accounts[username]) {
             errorDiv.textContent = 'Tên đăng nhập không tồn tại';
@@ -245,34 +250,48 @@ Nhà Hàng Phương Anh, nơi bạn có thể trải nghiệm những món ăn �
         
         const account = accounts[username];
         
+        // Kiểm tra mật khẩu
+        if (password !== account.password) {
+            errorDiv.textContent = 'Mật khẩu không đúng';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        // Disable button during login
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang đăng nhập...';
+        
         try {
-            await auth.signInWithEmailAndPassword(account.email, password);
+            console.log('Đang đăng nhập với:', username);
             
-            // Get user role from Firestore
-            const user = auth.currentUser;
-            const userDoc = await db.collection('users').where('email', '==', account.email).limit(1).get();
+            // Lưu thông tin đăng nhập vào sessionStorage
+            sessionStorage.setItem('isAuthenticated', 'true');
+            sessionStorage.setItem('userRole', account.role);
+            sessionStorage.setItem('username', username);
             
-            if (!userDoc.empty) {
-                const userData = userDoc.docs[0].data();
-                const role = userData.role;
-                
-                // Redirect based on role
-                if (role === 'admin') {
-                    window.location.href = '/admin';
-                } else if (role === 'manager') {
-                    window.location.href = '/manager';
-                } else {
-                    errorDiv.textContent = 'Bạn không có quyền truy cập';
-                    errorDiv.style.display = 'block';
-                    await auth.signOut();
-                }
+            // Redirect based on role
+            console.log('Sử dụng role:', account.role);
+            if (account.role === 'admin') {
+                console.log('Redirecting to /admin');
+                window.location.href = '/admin';
+            } else if (account.role === 'manager') {
+                console.log('Redirecting to /manager');
+                window.location.href = '/manager';
             } else {
-                errorDiv.textContent = 'Không tìm thấy thông tin người dùng';
+                errorDiv.textContent = 'Bạn không có quyền truy cập. Role: ' + account.role;
                 errorDiv.style.display = 'block';
+                sessionStorage.removeItem('isAuthenticated');
+                sessionStorage.removeItem('userRole');
+                sessionStorage.removeItem('username');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Đăng Nhập';
             }
         } catch (error) {
-            errorDiv.textContent = 'Đăng nhập thất bại: ' + error.message;
+            console.error('Lỗi đăng nhập:', error);
+            errorDiv.textContent = 'Đăng nhập thất bại: ' + (error.message || error);
             errorDiv.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Đăng Nhập';
         }
     });
     
@@ -298,6 +317,97 @@ Nhà Hàng Phương Anh, nơi bạn có thể trải nghiệm những món ăn �
         if (e.target === this) this.style.display = 'none';
     };
     </script>
+    
+    <!-- Floating Action Buttons -->
+    <div class="floating-buttons">
+        <a href="/order-online" class="floating-btn order-btn" title="Đặt hàng online">
+            <span class="floating-icon">🛒</span>
+            <span class="floating-text">Đặt Hàng Online</span>
+        </a>
+        <a href="tel:0913540161" class="floating-btn contact-btn" title="Liên hệ trực tiếp">
+            <span class="floating-icon">📞</span>
+            <span class="floating-text">Liên Hệ</span>
+        </a>
+    </div>
+    
+    <style>
+        .floating-buttons {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .floating-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #8d5524;
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .floating-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            background: #6d3f1a;
+        }
+        .floating-btn .floating-icon {
+            font-size: 24px;
+        }
+        .floating-btn .floating-text {
+            position: absolute;
+            right: 70px;
+            white-space: nowrap;
+            background: #8d5524;
+            padding: 8px 16px;
+            border-radius: 6px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .floating-btn:hover .floating-text {
+            opacity: 1;
+        }
+        .floating-btn.contact-btn {
+            background: #28a745;
+        }
+        .floating-btn.contact-btn:hover {
+            background: #218838;
+        }
+        .floating-btn.contact-btn .floating-text {
+            background: #28a745;
+        }
+        @media (max-width: 768px) {
+            .floating-buttons {
+                right: 10px;
+                bottom: 20px;
+                top: auto;
+                transform: none;
+            }
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+            }
+            .floating-btn .floating-icon {
+                font-size: 20px;
+            }
+            .floating-btn .floating-text {
+                display: none;
+            }
+        }
+    </style>
 </body>
 </html>
 
