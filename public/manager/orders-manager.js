@@ -134,10 +134,10 @@ function displayPendingOrders(orders) {
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     ${isTakeawayOrDelivery ? 
                         // Đơn mang về/ship: có thể xác nhận trực tiếp không cần bàn
-                        `<button class="btn-primary" onclick="confirmOrder('${order.id}', null)" style="padding: 6px 12px; font-size: 13px;">Xác nhận</button>` :
+                        `<button class="btn-primary" onclick="confirmOrder('${order.id}', null, '${deliveryType}')" style="padding: 6px 12px; font-size: 13px;">Xác nhận</button>` :
                         // Đơn tại bàn: cần xếp bàn trước
                         (hasTables ? 
-                            `<button class="btn-primary" onclick="confirmOrder('${order.id}', '${tableNumbers.join(',')}')" style="padding: 6px 12px; font-size: 13px;">Xác nhận</button>` :
+                            `<button class="btn-primary" onclick="confirmOrder('${order.id}', '${tableNumbers.join(',')}', '${deliveryType}')" style="padding: 6px 12px; font-size: 13px;">Xác nhận</button>` :
                             `<span style="color: #999; font-size: 13px;">Chưa xếp bàn</span>`)
                     }
                     <button class="btn-delete" onclick="cancelOrder('${order.id}')" style="padding: 6px 12px; font-size: 13px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s;">Hủy</button>
@@ -485,43 +485,29 @@ function closeSelectTableModal() {
     currentTablesForSelection = [];
 }
 
-// Xác nhận đơn hàng
-async function confirmOrder(orderId, tableNumbersParam) {
+// Xác nhận đơn hàng - Tối ưu: không cần gọi API lấy thông tin trước
+async function confirmOrder(orderId, tableNumbersParam, deliveryTypeParam) {
     if (!confirm('Bạn có chắc chắn muốn xác nhận đơn hàng này?')) {
         return;
     }
     
     try {
-        // Lấy thông tin đơn hàng để kiểm tra loại đơn
-        const orderResponse = await fetch(`/api/manager/orders/${orderId}`);
-        const orderData = await orderResponse.json();
-        
-        if (!orderData.success || !orderData.order) {
-            alert('Không tìm thấy đơn hàng');
-            return;
-        }
-        
-        const order = orderData.order;
-        const deliveryType = order.deliveryType || 'at-table';
+        // Sử dụng thông tin đã có sẵn từ bảng, không cần gọi API lại
+        const deliveryType = deliveryTypeParam || 'at-table';
         const isTakeawayOrDelivery = deliveryType === 'takeaway' || deliveryType === 'delivery';
         
         // Xử lý tableNumbers - có thể là string "1,2,3" hoặc mảng
         let finalTableNumbers = null;
-        if (!isTakeawayOrDelivery) {
-            if (tableNumbersParam) {
-                // Nếu là string, chuyển thành mảng
-                if (typeof tableNumbersParam === 'string') {
-                    finalTableNumbers = tableNumbersParam.split(',').map(t => parseInt(t.trim())).filter(t => !isNaN(t));
-                } else if (Array.isArray(tableNumbersParam)) {
-                    finalTableNumbers = tableNumbersParam.map(t => parseInt(t)).filter(t => !isNaN(t));
-                }
-            } else if (order.tableNumbers && Array.isArray(order.tableNumbers)) {
-                finalTableNumbers = order.tableNumbers.map(t => parseInt(t)).filter(t => !isNaN(t));
-            } else if (order.tableNumber) {
-                finalTableNumbers = [parseInt(order.tableNumber)];
+        if (!isTakeawayOrDelivery && tableNumbersParam) {
+            // Nếu là string, chuyển thành mảng
+            if (typeof tableNumbersParam === 'string') {
+                finalTableNumbers = tableNumbersParam.split(',').map(t => parseInt(t.trim())).filter(t => !isNaN(t) && t > 0);
+            } else if (Array.isArray(tableNumbersParam)) {
+                finalTableNumbers = tableNumbersParam.map(t => parseInt(t)).filter(t => !isNaN(t) && t > 0);
             }
         }
         
+        // Gọi API confirm trực tiếp, không cần gọi API GET trước
         const response = await fetch(`/api/manager/orders/${orderId}/confirm`, {
             method: 'PUT',
             headers: {
@@ -536,10 +522,8 @@ async function confirmOrder(orderId, tableNumbersParam) {
         
         if (data.success) {
             alert('Xác nhận đơn hàng thành công!');
-            // Reload danh sách sau một chút để đảm bảo dữ liệu đã được cập nhật
-            setTimeout(() => {
-                loadPendingOrders();
-            }, 500);
+            // Reload danh sách ngay lập tức, không cần delay
+            loadPendingOrders();
             
             // Cập nhật badge trên dashboard
             if (typeof checkPendingOrders === 'function') {

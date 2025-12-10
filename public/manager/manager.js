@@ -1,5 +1,13 @@
 // Load orders
+// CHÚ Ý: Hàm này chỉ dùng cho trang khác, KHÔNG override hàm từ update-orders.js
 async function loadOrders() {
+    // Nếu đang ở trang orders.html và có ordersTableBody, không override
+    const ordersTableBody = document.getElementById('ordersTableBody');
+    if (ordersTableBody && window.location.pathname.includes('/orders')) {
+        console.log('[manager.js] ordersTableBody found, skipping loadOrders override - let update-orders.js handle it');
+        return;
+    }
+    
     try {
         const response = await fetch('/api/manager/orders');
         const data = await response.json();
@@ -13,38 +21,14 @@ async function loadOrders() {
 }
 
 function displayOrders(orders) {
-    const ordersList = document.getElementById('ordersList');
+    // Nếu đang ở trang orders.html và có ordersTableBody, không override
     const ordersTableBody = document.getElementById('ordersTableBody');
-    
-    // pendingOrdersTableBody được xử lý bởi orders-manager.js
-    
-    // Xử lý cho trang orders-update.html
-    if (ordersTableBody) {
-        ordersTableBody.innerHTML = '';
-        
-        if (orders.length === 0) {
-            ordersTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">Không có đơn hàng</td></tr>';
-            return;
-        }
-        
-        orders.forEach((order, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${order.orderNumber || order.id.substring(0, 8)}</td>
-                <td>${order.customer?.name || order.customerName || 'N/A'}</td>
-                <td>${order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('vi-VN') : 'N/A'}</td>
-                <td>${order.tableNumber || 'N/A'}</td>
-                <td>${(order.totalAmount || 0).toLocaleString('vi-VN')} VNĐ</td>
-                <td><span class="status-badge status-${order.status}">${order.status}</span></td>
-                <td>
-                    <button class="btn-primary" onclick="editOrder('${order.id}')">Cập Nhật</button>
-                </td>
-            `;
-            ordersTableBody.appendChild(row);
-        });
+    if (ordersTableBody && window.location.pathname.includes('/orders')) {
+        console.log('[manager.js] ordersTableBody found, skipping displayOrders override - let update-orders.js handle it');
         return;
     }
+    
+    const ordersList = document.getElementById('ordersList');
     
     // Xử lý cho trang cũ (nếu có)
     if (ordersList) {

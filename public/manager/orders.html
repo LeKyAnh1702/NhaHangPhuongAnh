@@ -454,7 +454,7 @@
                                 <th>Thời Gian Ăn</th>
                                 <th>Chi Tiết</th>
                                 <th>Hình thức</th>
-                                <th>Thimage.pngao Tác</th>
+                                <th>Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody id="pendingOrdersTableBody">
@@ -473,44 +473,66 @@
                         
                         <form id="createOrderForm">
                             <div class="form-group">
-                                <label>Khách hàng *</label>
-                                <div class="customer-search-container">
-                                    <input type="text" id="customerSearch" placeholder="Nhập tên hoặc số điện thoại..." 
-                                           onkeyup="filterCustomersForOrder()" autocomplete="off">
-                                    <div id="customerDropdown" class="customer-dropdown"></div>
+                                <label>Tên khách hàng *</label>
+                                <input type="text" id="customerNameInput" placeholder="Nhập tên khách hàng" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Số điện thoại *</label>
+                                <input type="text" id="customerPhoneInput" placeholder="Nhập số điện thoại" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Hình thức *</label>
+                                <select id="deliveryType" onchange="handleDeliveryTypeChange()" required>
+                                    <option value="at-table">Ăn tại bàn</option>
+                                    <option value="takeaway">Mang về</option>
+                                    <option value="delivery">Giao hàng</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Các field cho "Ăn tại bàn" -->
+                            <div id="atTableFields">
+                                <div class="form-group">
+                                    <label>Số lượng người *</label>
+                                    <input type="number" id="numberOfPeople" placeholder="Nhập số lượng người" min="1" value="1" required>
                                 </div>
-                                <input type="hidden" id="selectedCustomerId">
-                                <input type="text" id="customerNameInput" placeholder="Tên khách hàng" style="margin-top: 10px; display: none;">
-                                <input type="text" id="customerPhoneInput" placeholder="Số điện thoại" style="margin-top: 10px; display: none;">
-                                <div id="selectedCustomerInfo" class="selected-customer-info" style="display: none;">
-                                    <p><strong>Đã chọn:</strong> <span id="selectedCustomerName"></span> - <span id="selectedCustomerPhone"></span></p>
-                                    <button type="button" class="btn-link" onclick="clearCustomerSelection()">Chọn lại</button>
+                                
+                                <div class="form-group">
+                                    <label>Thời gian ăn *</label>
+                                    <input type="datetime-local" id="eatingTime" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Số bàn</label>
+                                    <button type="button" class="btn-secondary" onclick="openSelectTableForOrder()">Chọn bàn</button>
+                                    <div id="selectedTablesDisplay" style="margin-top: 10px; padding: 10px; background: #f0f7ff; border-radius: 4px; display: none;">
+                                        <p><strong>Đã chọn:</strong> <span id="selectedTablesList"></span></p>
+                                        <button type="button" class="btn-link" onclick="clearTableSelection()">Chọn lại</button>
+                                    </div>
+                                    <input type="hidden" id="selectedTableNumbers">
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label>Số lượng người *</label>
-                                <input type="number" id="numberOfPeople" placeholder="Nhập số lượng người" min="1" value="1" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Thời gian ăn *</label>
-                                <input type="datetime-local" id="eatingTime" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Số bàn</label>
-                                <button type="button" class="btn-secondary" onclick="openSelectTableForOrder()">Chọn bàn</button>
-                                <div id="selectedTablesDisplay" style="margin-top: 10px; padding: 10px; background: #f0f7ff; border-radius: 4px; display: none;">
-                                    <p><strong>Đã chọn:</strong> <span id="selectedTablesList"></span></p>
-                                    <button type="button" class="btn-link" onclick="clearTableSelection()">Chọn lại</button>
+                            <!-- Các field cho "Mang về" -->
+                            <div id="takeawayFields" style="display: none;">
+                                <div class="form-group">
+                                    <label>Thời gian lấy hàng *</label>
+                                    <input type="datetime-local" id="pickupTime" required>
                                 </div>
-                                <input type="hidden" id="selectedTableNumbers">
                             </div>
                             
-                            <div class="form-group">
-                                <label>Ghi chú</label>
-                                <textarea id="orderNotes" rows="3" placeholder="Ghi chú cho đơn hàng"></textarea>
+                            <!-- Các field cho "Giao hàng" -->
+                            <div id="deliveryFields" style="display: none;">
+                                <div class="form-group">
+                                    <label>Thời gian giao hàng *</label>
+                                    <input type="datetime-local" id="deliveryTime" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Địa chỉ giao hàng *</label>
+                                    <textarea id="deliveryAddress" rows="3" placeholder="Nhập địa chỉ giao hàng" required></textarea>
+                                </div>
                             </div>
                             
                             <div class="form-actions">
@@ -586,8 +608,7 @@
                                 <th>STT</th>
                                 <th>Mã Đơn</th>
                                 <th>Khách Hàng</th>
-                                <th>Ngày Đặt</th>
-                                <th>Tổng Tiền</th>
+                                <th>Hình thức</th>
                                 <th>Trạng Thái</th>
                                 <th>Thao Tác</th>
                             </tr>
@@ -723,18 +744,25 @@
     <div id="updateOrderModal" class="update-order-modal" style="display: none;">
         <div class="update-order-modal-content">
             <div class="update-order-header">
-                <h2 style="text-align: center; width: 100%;">Hóa đơn</h2>
+                <h2 style="text-align: center; width: 100%;">HÓA ĐƠN DỊCH VỤ</h2>
                 <span class="close-update-order-modal" onclick="closeUpdateOrderModal()">&times;</span>
             </div>
             <div class="update-order-body">
                 <input type="hidden" id="updateOrderId">
                 
-                <div class="order-info-section">
-                    <div class="info-grid">
-                        <div><strong>Mã đơn:</strong> <span id="updateOrderNumber"></span></div>
-                        <div><strong>Khách hàng:</strong> <span id="updateCustomerName"></span></div>
-                        <div><strong>SĐT:</strong> <span id="updateCustomerPhone"></span></div>
-                        <div><strong>Ngày đặt:</strong> <span id="updateOrderDate"></span></div>
+                <div class="order-info-section" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                    <div style="margin-bottom: 15px;">
+                        <p style="margin: 5px 0;"><strong>Loại tài liệu:</strong> HÓA ĐƠN DỊCH VỤ</p>
+                        <p style="margin: 5px 0;"><strong>Hộ kinh doanh:</strong> Lê Kỳ Anh</p>
+                        <p style="margin: 5px 0;"><strong>Địa chỉ:</strong> Sơn Dương, T. Tuyên Quang</p>
+                    </div>
+                    <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
+                        <h3 style="margin-top: 0; margin-bottom: 10px; color: #8d5524;">Thông tin giao dịch:</h3>
+                        <div class="info-grid">
+                            <div><strong>Người mua:</strong> <span id="updateCustomerName"></span></div>
+                            <div><strong>Ngày lập:</strong> <span id="updateOrderDate"></span></div>
+                            <div><strong>Số Order:</strong> <span id="updateOrderNumber"></span></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -747,6 +775,7 @@
                 </div>
                 
                 <div class="invoice-items-section">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; color: #8d5524;">Mặt hàng và Giá trị:</h3>
                     <button type="button" class="btn-secondary" onclick="addInvoiceItem()" style="margin-bottom: 10px;">+ Thêm món</button>
                     <div class="invoice-items-table-container">
                         <table class="invoice-items-table">
@@ -766,8 +795,13 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="5" style="text-align: right; font-weight: bold;">Tổng tiền hàng hóa:</td>
+                                    <td colspan="5" style="text-align: right; font-weight: bold;">Tổng cộng thành tiền hàng hóa:</td>
                                     <td id="invoiceSubtotal" style="font-weight: bold;">0</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" style="text-align: right;">Thanh toán:</td>
+                                    <td id="paymentAmount" style="font-weight: bold;">0</td>
                                     <td></td>
                                 </tr>
                                 <tr>
@@ -785,8 +819,13 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="5" style="text-align: right; font-weight: bold; font-size: 1.1em;">Tổng thanh toán:</td>
+                                    <td colspan="5" style="text-align: right; font-weight: bold; font-size: 1.1em;">Tổng thanh toán (Thực nhận):</td>
                                     <td id="invoiceTotal" style="font-weight: bold; font-size: 1.1em; color: #8d5524;">0</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" style="text-align: right; font-weight: bold;">Lũy kế còn nợ:</td>
+                                    <td id="customerDebt" style="font-weight: bold; color: #dc3545;">0</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -814,19 +853,100 @@
         const savedLoadPendingOrders = window.loadPendingOrders;
         const savedConfirmOrder = window.confirmOrder;
         const savedLoadOrders = window.loadOrders;
+        const savedDisplayOrders = window.displayOrders;
     </script>
     <script src="manager.js"></script>
     <script>
         // Khôi phục các function từ orders-manager.js và update-orders.js
+        // Phải khôi phục SAU KHI manager.js load xong
+        console.log('[orders.html] Restoring functions after manager.js loaded...');
+        console.log('[orders.html] savedLoadOrders type:', typeof savedLoadOrders);
+        console.log('[orders.html] savedDisplayOrders type:', typeof savedDisplayOrders);
+        console.log('[orders.html] Current window.loadOrders type:', typeof window.loadOrders);
+        console.log('[orders.html] Current window.displayOrders type:', typeof window.displayOrders);
+        
         if (savedLoadPendingOrders) {
             window.loadPendingOrders = savedLoadPendingOrders;
+            console.log('[orders.html] Restored loadPendingOrders');
         }
         if (savedConfirmOrder) {
             window.confirmOrder = savedConfirmOrder;
+            console.log('[orders.html] Restored confirmOrder');
         }
         if (savedLoadOrders) {
             window.loadOrders = savedLoadOrders;
+            console.log('[orders.html] Restored loadOrders from update-orders.js');
+        } else {
+            console.error('[orders.html] savedLoadOrders is not a function!');
         }
+        if (savedDisplayOrders) {
+            window.displayOrders = savedDisplayOrders;
+            console.log('[orders.html] Restored displayOrders from update-orders.js');
+        } else {
+            console.error('[orders.html] savedDisplayOrders is not a function!');
+        }
+        
+        // Đảm bảo không bị override lại - wrap trong Object.defineProperty
+        if (savedLoadOrders) {
+            Object.defineProperty(window, 'loadOrders', {
+                value: savedLoadOrders,
+                writable: false,
+                configurable: false
+            });
+            console.log('[orders.html] Protected loadOrders from being overridden');
+        }
+        if (savedDisplayOrders) {
+            Object.defineProperty(window, 'displayOrders', {
+                value: savedDisplayOrders,
+                writable: false,
+                configurable: false
+            });
+            console.log('[orders.html] Protected displayOrders from being overridden');
+        }
+        
+        // Hàm chuyển tab cho orders
+        window.switchOrderTab = function(tabName) {
+            // Ẩn tất cả các tab content
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Ẩn tất cả các tab button
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Hiển thị tab được chọn
+            const selectedTab = document.getElementById(`tab-${tabName}`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Kích hoạt tab button
+            const buttons = document.querySelectorAll('.tab');
+            buttons.forEach(btn => {
+                if (btn.textContent.includes('Xác Nhận') && tabName === 'confirm') {
+                    btn.classList.add('active');
+                } else if (btn.textContent.includes('Tạo Đơn Hàng') && tabName === 'create') {
+                    btn.classList.add('active');
+                } else if (btn.textContent.includes('Cập Nhật') && tabName === 'update') {
+                    btn.classList.add('active');
+                } else if (btn.textContent.includes('Thanh Toán') && tabName === 'payment') {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Load dữ liệu khi chuyển tab
+            if (tabName === 'confirm' && typeof window.loadPendingOrders === 'function') {
+                window.loadPendingOrders();
+            } else if (tabName === 'update' && typeof window.loadOrders === 'function') {
+                window.loadOrders();
+            } else if (tabName === 'create' && typeof window.loadDataForCreateOrder === 'function') {
+                window.loadDataForCreateOrder();
+            }
+        };
         
         // Đảm bảo loadPendingOrders được gọi sau khi khôi phục
         if (document.getElementById('pendingOrdersTableBody') && typeof window.loadPendingOrders === 'function') {
@@ -836,34 +956,79 @@
                 window.loadPendingOrders();
             }
         }
-    </script>
-    <script>
-        // Function resetCreateOrderForm
-        function resetCreateOrderForm() {
-            const form = document.getElementById('createOrderForm');
-            if (form) {
-                form.reset();
+        
+        // Đảm bảo loadOrders được gọi khi tab được click hoặc khi trang load
+        console.log('[orders.html] Script loaded, checking for update tab...');
+        console.log('[orders.html] window.loadOrders type:', typeof window.loadOrders);
+        console.log('[orders.html] window.displayOrders type:', typeof window.displayOrders);
+        
+        // Load orders nếu tab update đang active khi trang load
+        setTimeout(() => {
+            const ordersTableBody = document.getElementById('ordersTableBody');
+            const updateTab = document.getElementById('tab-update');
+            
+            console.log('[orders.html] Checking tab state:', {
+                ordersTableBody: !!ordersTableBody,
+                updateTab: !!updateTab,
+                isActive: updateTab?.classList.contains('active'),
+                loadOrdersExists: typeof window.loadOrders === 'function'
+            });
+            
+            if (ordersTableBody && updateTab && updateTab.classList.contains('active')) {
+                console.log('[orders.html] Tab update is active on page load, loading orders...');
+                if (typeof window.loadOrders === 'function') {
+                    window.loadOrders();
+                } else {
+                    console.error('[orders.html] loadOrders function not found!');
+                }
             }
-            const selectedCustomerId = document.getElementById('selectedCustomerId');
-            if (selectedCustomerId) {
-                selectedCustomerId.value = '';
-            }
-            const selectedCustomerInfo = document.getElementById('selectedCustomerInfo');
-            if (selectedCustomerInfo) {
-                selectedCustomerInfo.style.display = 'none';
-            }
-            const orderItemsTableBody = document.getElementById('orderItemsTableBody');
-            if (orderItemsTableBody) {
-                orderItemsTableBody.innerHTML = '';
-            }
-            const orderTotalAmount = document.getElementById('orderTotalAmount');
-            if (orderTotalAmount) {
-                orderTotalAmount.textContent = '0';
-            }
+        }, 500);
+        
+        // Override switchOrderTab để đảm bảo loadOrders được gọi
+        const originalSwitchOrderTab = window.switchOrderTab;
+        if (originalSwitchOrderTab) {
+            window.switchOrderTab = function(tabName) {
+                console.log('[orders.html] switchOrderTab called with:', tabName);
+                originalSwitchOrderTab(tabName);
+                // Thêm delay nhỏ để đảm bảo DOM đã được cập nhật
+                setTimeout(() => {
+                    if (tabName === 'update') {
+                        console.log('[orders.html] Tab update clicked, checking loadOrders...');
+                        if (typeof window.loadOrders === 'function') {
+                            console.log('[orders.html] Calling loadOrders...');
+                            window.loadOrders();
+                        } else {
+                            console.error('[orders.html] loadOrders function not found when switching to update tab!');
+                        }
+                    }
+                }, 200);
+            };
+        } else {
+            console.error('[orders.html] originalSwitchOrderTab not found!');
         }
         
-        // Export function để có thể gọi từ HTML
-        window.resetCreateOrderForm = resetCreateOrderForm;
+        // Thêm event listener trực tiếp cho các tab buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const onclick = this.getAttribute('onclick') || '';
+                    if (onclick.includes("switchOrderTab('update')")) {
+                        setTimeout(() => {
+                            console.log('[orders.html] Update tab button clicked directly');
+                            if (typeof window.loadOrders === 'function') {
+                                window.loadOrders();
+                            }
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        // Function resetCreateOrderForm - sử dụng hàm từ create-order.js
+        // Không override để tránh conflict
+        // Hàm resetCreateOrderForm đã được export từ create-order.js
     </script>
     
     <!-- Modal Xem Chi Tiết Order -->

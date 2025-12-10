@@ -1,11 +1,12 @@
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCrGIkI4zixt7BLwu4xgQin0qXDXe8kO2E",
-    authDomain: "nha-hang-phuong-anh.firebaseapp.com",
-    projectId: "nha-hang-phuong-anh",
-    storageBucket: "nha-hang-phuong-anh.firebasestorage.app",
-    messagingSenderId: "128764853420",
-    appId: "1:128764853420:web:02633aa2331e6964947309"
+    apiKey: "AIzaSyDGsxZ7YQU5jnMDIv9lU8RzyGNNRPar0MY",
+    authDomain: "nhphuonganh.firebaseapp.com",
+    projectId: "nhphuonganh",
+    storageBucket: "nhphuonganh.firebasestorage.app",
+    messagingSenderId: "105483657392",
+    appId: "1:105483657392:web:cf4a0620154a5a14fddb75",
+    measurementId: "G-6VFF4JZS53"
 };
 
 // Initialize Firebase

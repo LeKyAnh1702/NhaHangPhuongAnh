@@ -1062,6 +1062,95 @@ router.get('/orders/:id', async (req, res) => {
     }
 });
 
+// Kiểm tra tồn kho trước khi xác nhận đơn hàng
+router.post('/orders/:id/check-inventory', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const orderRef = db.collection('orders').doc(id);
+        const orderDoc = await orderRef.get();
+        
+        if (!orderDoc.exists) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
+        }
+        
+        const orderData = orderDoc.data();
+        const items = orderData.items || [];
+        
+        if (items.length === 0) {
+            return res.json({ success: true, canConfirm: true });
+        }
+        
+        // Lấy tất cả inventory items
+        const inventorySnapshot = await db.collection('inventory').get();
+        const inventoryMap = {};
+        inventorySnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            inventoryMap[doc.id] = {
+                name: data.name || '',
+                quantity: parseFloat(data.quantity) || 0,
+                unit: data.unit || ''
+            };
+        });
+        
+        // Kiểm tra từng món trong đơn hàng
+        const insufficientItems = [];
+        
+        for (const item of items) {
+            const menuItemId = item.menuItemId || item.id;
+            const quantity = item.quantity || 1;
+            
+            if (!menuItemId) continue;
+            
+            // Lấy thông tin món ăn
+            const menuItemDoc = await db.collection('menuItems').doc(menuItemId).get();
+            if (!menuItemDoc.exists) continue;
+            
+            const menuItemData = menuItemDoc.data();
+            const ingredients = menuItemData.ingredients || [];
+            
+            // Kiểm tra từng nguyên liệu
+            for (const ingredient of ingredients) {
+                const ingredientId = ingredient.ingredientId || ingredient.id;
+                const requiredAmount = (parseFloat(ingredient.amount) || 0) * quantity;
+                
+                if (!ingredientId) continue;
+                
+                const inventoryItem = inventoryMap[ingredientId];
+                if (!inventoryItem) {
+                    insufficientItems.push({
+                        ingredientName: ingredient.name || 'Không xác định',
+                        required: requiredAmount,
+                        available: 0,
+                        unit: ingredient.unit || ''
+                    });
+                    continue;
+                }
+                
+                if (inventoryItem.quantity < requiredAmount) {
+                    insufficientItems.push({
+                        ingredientName: ingredient.name || inventoryItem.name,
+                        required: requiredAmount,
+                        available: inventoryItem.quantity,
+                        unit: ingredient.unit || inventoryItem.unit
+                    });
+                }
+            }
+        }
+        
+        const canConfirm = insufficientItems.length === 0;
+        
+        res.json({
+            success: true,
+            canConfirm,
+            insufficientItems: canConfirm ? [] : insufficientItems
+        });
+    } catch (error) {
+        console.error('Error checking inventory:', error);
+        // Nếu có lỗi, vẫn cho phép xác nhận để không chặn quy trình
+        res.json({ success: true, canConfirm: true, error: error.message });
+    }
+});
+
 // Xác nhận đơn hàng
 router.put('/orders/:id/confirm', async (req, res) => {
     try {
@@ -1130,22 +1219,48 @@ router.put('/orders/:id/confirm', async (req, res) => {
 // Tạo đơn hàng mới (từ manager)
 router.post('/orders/create', async (req, res) => {
     try {
-        const { customerId, customerName, customerPhone, items, total, discount, finalTotal, numberOfPeople, eatingTime, tableNumbers, notes, deliveryType } = req.body;
+        console.log('[POST /api/manager/orders/create] Request received');
+        console.log('[POST /api/manager/orders/create] Body:', JSON.stringify(req.body, null, 2));
+        
+        const { customerId, customerName, customerPhone, items, total, discount, finalTotal, numberOfPeople, eatingTime, pickupTime, deliveryTime, deliveryAddress, tableNumbers, notes, deliveryType } = req.body;
         
         if (!items || items.length === 0) {
+            console.log('[POST /api/manager/orders/create] Error: No items');
             return res.status(400).json({ success: false, error: 'Vui lòng thêm ít nhất một món vào đơn hàng' });
         }
         
         if (!customerName || !customerPhone) {
+            console.log('[POST /api/manager/orders/create] Error: Missing customer info');
             return res.status(400).json({ success: false, error: 'Vui lòng nhập thông tin khách hàng' });
         }
         
-        if (!numberOfPeople || numberOfPeople < 1) {
-            return res.status(400).json({ success: false, error: 'Số lượng người phải lớn hơn 0' });
-        }
+        const orderDeliveryType = deliveryType || 'at-table';
+        console.log('[POST /api/manager/orders/create] Delivery type:', orderDeliveryType);
         
-        if (!eatingTime) {
-            return res.status(400).json({ success: false, error: 'Vui lòng chọn thời gian ăn' });
+        // Validate dựa trên deliveryType
+        if (orderDeliveryType === 'at-table') {
+            if (!numberOfPeople || numberOfPeople < 1) {
+                console.log('[POST /api/manager/orders/create] Error: Invalid numberOfPeople');
+                return res.status(400).json({ success: false, error: 'Số lượng người phải lớn hơn 0' });
+            }
+            if (!eatingTime) {
+                console.log('[POST /api/manager/orders/create] Error: Missing eatingTime');
+                return res.status(400).json({ success: false, error: 'Vui lòng chọn thời gian ăn' });
+            }
+        } else if (orderDeliveryType === 'takeaway') {
+            if (!pickupTime) {
+                console.log('[POST /api/manager/orders/create] Error: Missing pickupTime');
+                return res.status(400).json({ success: false, error: 'Vui lòng chọn thời gian lấy hàng' });
+            }
+        } else if (orderDeliveryType === 'delivery') {
+            if (!deliveryTime) {
+                console.log('[POST /api/manager/orders/create] Error: Missing deliveryTime');
+                return res.status(400).json({ success: false, error: 'Vui lòng chọn thời gian giao hàng' });
+            }
+            if (!deliveryAddress || !deliveryAddress.trim()) {
+                console.log('[POST /api/manager/orders/create] Error: Missing deliveryAddress');
+                return res.status(400).json({ success: false, error: 'Vui lòng nhập địa chỉ giao hàng' });
+            }
         }
         
         // Tạo số order ngẫu nhiên 5 chữ số
@@ -1162,12 +1277,14 @@ router.post('/orders/create', async (req, res) => {
             discount: discount || 0,
             finalTotal: finalTotal || total || 0,
             status: 'confirmed', // Manager tạo đơn tự động xác nhận
-            numberOfPeople: numberOfPeople,
-            eatingTime: eatingTime ? admin.firestore.Timestamp.fromDate(new Date(eatingTime)) : null,
-            tableNumbers: tableNumbers && tableNumbers.length > 0 ? tableNumbers : null,
-            tableNumber: tableNumbers && tableNumbers.length > 0 ? tableNumbers[0] : null, // Lấy bàn đầu tiên để tương thích
-            deliveryType: deliveryType || 'at-table',
-            deliveryAddress: null,
+            numberOfPeople: orderDeliveryType === 'at-table' ? (numberOfPeople || 1) : 1,
+            eatingTime: orderDeliveryType === 'at-table' && eatingTime ? admin.firestore.Timestamp.fromDate(new Date(eatingTime)) : null,
+            pickupTime: orderDeliveryType === 'takeaway' && pickupTime ? admin.firestore.Timestamp.fromDate(new Date(pickupTime)) : null,
+            deliveryTime: orderDeliveryType === 'delivery' && deliveryTime ? admin.firestore.Timestamp.fromDate(new Date(deliveryTime)) : null,
+            deliveryAddress: orderDeliveryType === 'delivery' ? (deliveryAddress || null) : null,
+            tableNumbers: orderDeliveryType === 'at-table' && tableNumbers && tableNumbers.length > 0 ? tableNumbers : null,
+            tableNumber: orderDeliveryType === 'at-table' && tableNumbers && tableNumbers.length > 0 ? tableNumbers[0] : null, // Lấy bàn đầu tiên để tương thích
+            deliveryType: orderDeliveryType,
             notes: notes || '',
             orderNumber: orderNumber,
             paymentStatus: 'pending',
@@ -1176,10 +1293,13 @@ router.post('/orders/create', async (req, res) => {
             confirmedAt: admin.firestore.FieldValue.serverTimestamp()
         };
         
-        const orderRef = await db.collection('orders').add(orderData);
+        console.log('[POST /api/manager/orders/create] Creating order with data:', JSON.stringify(orderData, null, 2));
         
-        // Cập nhật trạng thái bàn nếu có
-        if (tableNumbers && tableNumbers.length > 0) {
+        const orderRef = await db.collection('orders').add(orderData);
+        console.log('[POST /api/manager/orders/create] Order created successfully:', orderRef.id);
+        
+        // Cập nhật trạng thái bàn nếu có (chỉ cho đơn ăn tại bàn)
+        if (orderDeliveryType === 'at-table' && tableNumbers && tableNumbers.length > 0) {
             for (const tableNumber of tableNumbers) {
                 // Tìm bàn theo số bàn
                 const tablesSnapshot = await db.collection('tables')
@@ -1198,9 +1318,11 @@ router.post('/orders/create', async (req, res) => {
             }
         }
         
+        console.log('[POST /api/manager/orders/create] Order creation completed');
         res.json({ success: true, orderId: orderRef.id, orderNumber: orderNumber });
     } catch (error) {
-        console.error('Error creating order:', error);
+        console.error('[POST /api/manager/orders/create] Error:', error);
+        console.error('[POST /api/manager/orders/create] Error stack:', error.stack);
         res.status(400).json({ success: false, error: error.message });
     }
 });
@@ -1282,6 +1404,48 @@ router.put('/orders/:id/confirm', async (req, res) => {
         res.json({ success: true, message: 'Order confirmed successfully' });
     } catch (error) {
         console.error('Error confirming order:', error);
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+// Lấy danh sách đơn hàng
+router.get('/orders', async (req, res) => {
+    try {
+        console.log('[GET /api/manager/orders] Request received');
+        const ordersSnapshot = await db.collection('orders').limit(1000).get();
+        console.log('[GET /api/manager/orders] Fetched', ordersSnapshot.size, 'orders');
+        
+        const orders = ordersSnapshot.docs.map(doc => {
+            const data = doc.data();
+            const order = {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt?.seconds ? new Date(data.createdAt.seconds * 1000) : data.createdAt),
+                updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt?.seconds ? new Date(data.updatedAt.seconds * 1000) : data.updatedAt),
+                confirmedAt: data.confirmedAt?.toDate ? data.confirmedAt.toDate() : (data.confirmedAt?.seconds ? new Date(data.confirmedAt.seconds * 1000) : data.confirmedAt),
+                eatingTime: data.eatingTime?.toDate ? data.eatingTime.toDate() : (data.eatingTime?.seconds ? new Date(data.eatingTime.seconds * 1000) : data.eatingTime),
+                pickupTime: data.pickupTime?.toDate ? data.pickupTime.toDate() : (data.pickupTime?.seconds ? new Date(data.pickupTime.seconds * 1000) : data.pickupTime),
+                deliveryTime: data.deliveryTime?.toDate ? data.deliveryTime.toDate() : (data.deliveryTime?.seconds ? new Date(data.deliveryTime.seconds * 1000) : data.deliveryTime)
+            };
+            
+            // Log một vài đơn hàng để debug
+            if (ordersSnapshot.docs.indexOf(doc) < 3) {
+                console.log('[GET /api/manager/orders] Order sample:', {
+                    id: order.id,
+                    status: order.status,
+                    paymentStatus: order.paymentStatus,
+                    orderNumber: order.orderNumber,
+                    customerName: order.customerName
+                });
+            }
+            
+            return order;
+        });
+        
+        console.log('[GET /api/manager/orders] Returning', orders.length, 'orders');
+        res.json({ success: true, orders });
+    } catch (error) {
+        console.error('[GET /api/manager/orders] Error:', error);
         res.status(400).json({ success: false, error: error.message });
     }
 });

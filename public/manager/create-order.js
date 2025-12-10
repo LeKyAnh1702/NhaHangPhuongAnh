@@ -382,67 +382,7 @@ function updateOrderTotal() {
     }
 }
 
-// Tìm kiếm khách hàng
-function filterCustomersForOrder() {
-    const searchInput = document.getElementById('customerSearch');
-    const query = searchInput.value.trim().toLowerCase();
-    const dropdown = document.getElementById('customerDropdown');
-    
-    if (!query) {
-        dropdown.style.display = 'none';
-        return;
-    }
-    
-    const filtered = allCustomers.filter(customer => {
-        const name = (customer.name || '').toLowerCase();
-        const phone = (customer.phone || '').toLowerCase();
-        return name.includes(query) || phone.includes(query);
-    });
-    
-    dropdown.innerHTML = '';
-    
-    if (filtered.length === 0) {
-        dropdown.innerHTML = '<div class="customer-dropdown-item">Không tìm thấy khách hàng</div>';
-    } else {
-        filtered.slice(0, 10).forEach(customer => {
-            const item = document.createElement('div');
-            item.className = 'customer-dropdown-item';
-            item.innerHTML = `<strong>${customer.name || 'N/A'}</strong> - ${customer.phone || 'N/A'}`;
-            item.onclick = () => selectCustomerForOrder(customer);
-            dropdown.appendChild(item);
-        });
-    }
-    
-    dropdown.style.display = 'block';
-}
-
-// Chọn khách hàng
-function selectCustomerForOrder(customer) {
-    document.getElementById('selectedCustomerId').value = customer.id;
-    document.getElementById('selectedCustomerName').textContent = customer.name || 'N/A';
-    document.getElementById('selectedCustomerPhone').textContent = customer.phone || 'N/A';
-    document.getElementById('selectedCustomerInfo').style.display = 'block';
-    document.getElementById('customerSearch').value = '';
-    document.getElementById('customerDropdown').style.display = 'none';
-    document.getElementById('customerNameInput').style.display = 'none';
-    document.getElementById('customerPhoneInput').style.display = 'none';
-}
-
-// Xóa lựa chọn khách hàng
-function clearCustomerSelection() {
-    document.getElementById('selectedCustomerId').value = '';
-    document.getElementById('selectedCustomerInfo').style.display = 'none';
-    const customerNameInput = document.getElementById('customerNameInput');
-    const customerPhoneInput = document.getElementById('customerPhoneInput');
-    if (customerNameInput) {
-        customerNameInput.style.display = 'block';
-        customerNameInput.value = '';
-    }
-    if (customerPhoneInput) {
-        customerPhoneInput.style.display = 'block';
-        customerPhoneInput.value = '';
-    }
-}
+// Các hàm tìm kiếm khách hàng đã được loại bỏ - giờ chỉ nhập thủ công Tên KH và SĐT
 
 // Load bàn ăn
 async function loadTablesForOrder() {
@@ -574,6 +514,44 @@ function closeSelectTableForOrderModal() {
     document.getElementById('selectTableForOrderModal').style.display = 'none';
 }
 
+// Xử lý thay đổi hình thức
+function handleDeliveryTypeChange() {
+    const deliveryType = document.getElementById('deliveryType').value;
+    const atTableFields = document.getElementById('atTableFields');
+    const takeawayFields = document.getElementById('takeawayFields');
+    const deliveryFields = document.getElementById('deliveryFields');
+    
+    // Ẩn tất cả các field
+    if (atTableFields) atTableFields.style.display = 'none';
+    if (takeawayFields) takeawayFields.style.display = 'none';
+    if (deliveryFields) deliveryFields.style.display = 'none';
+    
+    // Bỏ required từ tất cả các field
+    const allRequiredFields = document.querySelectorAll('#atTableFields input[required], #takeawayFields input[required], #deliveryFields input[required], #deliveryFields textarea[required]');
+    allRequiredFields.forEach(field => {
+        field.removeAttribute('required');
+    });
+    
+    // Hiển thị và set required cho field tương ứng
+    if (deliveryType === 'at-table') {
+        if (atTableFields) atTableFields.style.display = 'block';
+        const numberOfPeople = document.getElementById('numberOfPeople');
+        const eatingTime = document.getElementById('eatingTime');
+        if (numberOfPeople) numberOfPeople.setAttribute('required', 'required');
+        if (eatingTime) eatingTime.setAttribute('required', 'required');
+    } else if (deliveryType === 'takeaway') {
+        if (takeawayFields) takeawayFields.style.display = 'block';
+        const pickupTime = document.getElementById('pickupTime');
+        if (pickupTime) pickupTime.setAttribute('required', 'required');
+    } else if (deliveryType === 'delivery') {
+        if (deliveryFields) deliveryFields.style.display = 'block';
+        const deliveryTime = document.getElementById('deliveryTime');
+        const deliveryAddress = document.getElementById('deliveryAddress');
+        if (deliveryTime) deliveryTime.setAttribute('required', 'required');
+        if (deliveryAddress) deliveryAddress.setAttribute('required', 'required');
+    }
+}
+
 // Reset form
 function resetCreateOrderForm() {
     orderItems = [];
@@ -582,32 +560,52 @@ function resetCreateOrderForm() {
     if (form) {
         form.reset();
     }
-    document.getElementById('selectedCustomerId').value = '';
-    document.getElementById('selectedCustomerInfo').style.display = 'none';
-    document.getElementById('selectedTablesDisplay').style.display = 'none';
+    
+    // Reset các input khách hàng (đã thay đổi từ autocomplete sang nhập thủ công)
     const customerNameInput = document.getElementById('customerNameInput');
     const customerPhoneInput = document.getElementById('customerPhoneInput');
     if (customerNameInput) {
-        customerNameInput.style.display = 'block';
         customerNameInput.value = '';
     }
     if (customerPhoneInput) {
-        customerPhoneInput.style.display = 'block';
         customerPhoneInput.value = '';
     }
+    
+    // Reset hiển thị bàn đã chọn
+    const selectedTablesDisplay = document.getElementById('selectedTablesDisplay');
+    if (selectedTablesDisplay) {
+        selectedTablesDisplay.style.display = 'none';
+    }
+    
+    // Reset các field thời gian
+    const eatingTimeInput = document.getElementById('eatingTime');
+    if (eatingTimeInput) eatingTimeInput.value = '';
+    const pickupTimeInput = document.getElementById('pickupTime');
+    if (pickupTimeInput) pickupTimeInput.value = '';
+    const deliveryTimeInput = document.getElementById('deliveryTime');
+    if (deliveryTimeInput) deliveryTimeInput.value = '';
+    const deliveryAddressInput = document.getElementById('deliveryAddress');
+    if (deliveryAddressInput) deliveryAddressInput.value = '';
+    
     updateOrderItemsTable();
     
-    // Set thời gian ăn mặc định (1 giờ sau hiện tại)
-    const eatingTimeInput = document.getElementById('eatingTime');
-    if (eatingTimeInput) {
-        const now = new Date();
-        now.setHours(now.getHours() + 1);
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        eatingTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    // Reset delivery type về mặc định và hiển thị field tương ứng
+    const deliveryTypeSelect = document.getElementById('deliveryType');
+    if (deliveryTypeSelect) {
+        deliveryTypeSelect.value = 'at-table';
+        handleDeliveryTypeChange();
+        
+        // Set thời gian mặc định cho field ăn tại bàn
+        if (eatingTimeInput) {
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            eatingTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
     }
     
     // Reset menu tab
@@ -621,17 +619,47 @@ async function previewManagerOrder() {
         return;
     }
     
-    const customerId = document.getElementById('selectedCustomerId').value;
     const customerNameInput = document.getElementById('customerNameInput');
     const customerPhoneInput = document.getElementById('customerPhoneInput');
-    const customerName = customerId ? document.getElementById('selectedCustomerName').textContent : (customerNameInput.value || 'Khách lẻ');
-    const customerPhone = customerId ? document.getElementById('selectedCustomerPhone').textContent : (customerPhoneInput.value || '');
-    const numberOfPeople = parseInt(document.getElementById('numberOfPeople').value) || 1;
-    const eatingTime = document.getElementById('eatingTime').value;
+    const customerName = customerNameInput ? customerNameInput.value.trim() : '';
+    const customerPhone = customerPhoneInput ? customerPhoneInput.value.trim() : '';
     
-    if (!eatingTime) {
-        alert('Vui lòng chọn thời gian ăn');
+    if (!customerName || !customerPhone) {
+        alert('Vui lòng nhập đầy đủ tên khách hàng và số điện thoại');
         return;
+    }
+    
+    const deliveryType = document.getElementById('deliveryType').value;
+    let numberOfPeople = 1;
+    let eatingTime = null;
+    let pickupTime = null;
+    let deliveryTime = null;
+    let deliveryAddress = '';
+    
+    if (deliveryType === 'at-table') {
+        numberOfPeople = parseInt(document.getElementById('numberOfPeople').value) || 1;
+        eatingTime = document.getElementById('eatingTime').value;
+        if (!eatingTime) {
+            alert('Vui lòng chọn thời gian ăn');
+            return;
+        }
+    } else if (deliveryType === 'takeaway') {
+        pickupTime = document.getElementById('pickupTime').value;
+        if (!pickupTime) {
+            alert('Vui lòng chọn thời gian lấy hàng');
+            return;
+        }
+    } else if (deliveryType === 'delivery') {
+        deliveryTime = document.getElementById('deliveryTime').value;
+        deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+        if (!deliveryTime) {
+            alert('Vui lòng chọn thời gian giao hàng');
+            return;
+        }
+        if (!deliveryAddress) {
+            alert('Vui lòng nhập địa chỉ giao hàng');
+            return;
+        }
     }
     
     // Tạo order number ngẫu nhiên
@@ -650,23 +678,24 @@ async function previewManagerOrder() {
     const now = new Date();
     const orderDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
     
-    // Format thời gian ăn
-    const eatingTimeDate = new Date(eatingTime);
-    const eatingTimeFormatted = `${String(eatingTimeDate.getDate()).padStart(2, '0')}/${String(eatingTimeDate.getMonth() + 1).padStart(2, '0')}/${eatingTimeDate.getFullYear()}, ${String(eatingTimeDate.getHours()).padStart(2, '0')}:${String(eatingTimeDate.getMinutes()).padStart(2, '0')}`;
-    
-    // Lấy công nợ nếu có customerId
-    let debt = 0;
-    if (customerId) {
-        try {
-            const debtResponse = await fetch(`/api/manager/customers/${customerId}/debt`);
-            const debtData = await debtResponse.json();
-            if (debtData.success) {
-                debt = debtData.closingBalance || 0;
-            }
-        } catch (error) {
-            console.error('Error loading debt:', error);
-        }
+    // Format thời gian dựa trên deliveryType
+    let timeInfo = '';
+    if (deliveryType === 'at-table' && eatingTime) {
+        const eatingTimeDate = new Date(eatingTime);
+        const eatingTimeFormatted = `${String(eatingTimeDate.getDate()).padStart(2, '0')}/${String(eatingTimeDate.getMonth() + 1).padStart(2, '0')}/${eatingTimeDate.getFullYear()}, ${String(eatingTimeDate.getHours()).padStart(2, '0')}:${String(eatingTimeDate.getMinutes()).padStart(2, '0')}`;
+        timeInfo = `<p><strong>Thời gian ăn:</strong> ${eatingTimeFormatted}</p><p><strong>Số lượng người:</strong> ${numberOfPeople}</p>`;
+    } else if (deliveryType === 'takeaway' && pickupTime) {
+        const pickupTimeDate = new Date(pickupTime);
+        const pickupTimeFormatted = `${String(pickupTimeDate.getDate()).padStart(2, '0')}/${String(pickupTimeDate.getMonth() + 1).padStart(2, '0')}/${pickupTimeDate.getFullYear()}, ${String(pickupTimeDate.getHours()).padStart(2, '0')}:${String(pickupTimeDate.getMinutes()).padStart(2, '0')}`;
+        timeInfo = `<p><strong>Thời gian lấy hàng:</strong> ${pickupTimeFormatted}</p>`;
+    } else if (deliveryType === 'delivery' && deliveryTime) {
+        const deliveryTimeDate = new Date(deliveryTime);
+        const deliveryTimeFormatted = `${String(deliveryTimeDate.getDate()).padStart(2, '0')}/${String(deliveryTimeDate.getMonth() + 1).padStart(2, '0')}/${deliveryTimeDate.getFullYear()}, ${String(deliveryTimeDate.getHours()).padStart(2, '0')}:${String(deliveryTimeDate.getMinutes()).padStart(2, '0')}`;
+        timeInfo = `<p><strong>Thời gian giao hàng:</strong> ${deliveryTimeFormatted}</p><p><strong>Địa chỉ giao hàng:</strong> ${deliveryAddress}</p>`;
     }
+    
+    // Không cần lấy công nợ vì không có customerId khi nhập thủ công
+    let debt = 0;
     
     body.innerHTML = `
         <div class="preview-business-info">
@@ -678,8 +707,8 @@ async function previewManagerOrder() {
             <p><strong>Người mua:</strong> ${customerName}</p>
             <p><strong>Ngày lập:</strong> ${orderDate}</p>
             <p><strong>Số Order:</strong> ${orderNumber}</p>
-            <p><strong>Thời gian ăn:</strong> ${eatingTimeFormatted}</p>
-            <p><strong>Số lượng người:</strong> ${numberOfPeople}</p>
+            <p><strong>Hình thức:</strong> ${deliveryType === 'at-table' ? 'Ăn tại bàn' : deliveryType === 'takeaway' ? 'Mang về' : 'Giao hàng'}</p>
+            ${timeInfo}
         </div>
         
         <div class="preview-items-table">
@@ -759,32 +788,78 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const customerId = document.getElementById('selectedCustomerId').value;
             const customerNameInput = document.getElementById('customerNameInput');
             const customerPhoneInput = document.getElementById('customerPhoneInput');
-            const customerName = customerId ? document.getElementById('selectedCustomerName').textContent : customerNameInput.value;
-            const customerPhone = customerId ? document.getElementById('selectedCustomerPhone').textContent : customerPhoneInput.value;
+            const customerName = customerNameInput ? customerNameInput.value.trim() : '';
+            const customerPhone = customerPhoneInput ? customerPhoneInput.value.trim() : '';
             
             if (!customerName || !customerPhone) {
-                alert('Vui lòng nhập thông tin khách hàng');
+                alert('Vui lòng nhập đầy đủ tên khách hàng và số điện thoại');
                 return;
             }
             
-            const numberOfPeople = parseInt(document.getElementById('numberOfPeople').value) || 1;
-            const eatingTime = document.getElementById('eatingTime').value;
+            const deliveryType = document.getElementById('deliveryType').value;
+            let numberOfPeople = 1;
+            let eatingTime = null;
+            let pickupTime = null;
+            let deliveryTime = null;
+            let deliveryAddress = '';
+            let tableNumbers = null;
             
-            if (!eatingTime) {
-                alert('Vui lòng chọn thời gian ăn');
-                return;
+            if (deliveryType === 'at-table') {
+                numberOfPeople = parseInt(document.getElementById('numberOfPeople').value) || 1;
+                eatingTime = document.getElementById('eatingTime').value;
+                if (!eatingTime) {
+                    alert('Vui lòng chọn thời gian ăn');
+                    return;
+                }
+                tableNumbers = selectedTablesForOrder.length > 0 ? selectedTablesForOrder : null;
+            } else if (deliveryType === 'takeaway') {
+                pickupTime = document.getElementById('pickupTime').value;
+                if (!pickupTime) {
+                    alert('Vui lòng chọn thời gian lấy hàng');
+                    return;
+                }
+            } else if (deliveryType === 'delivery') {
+                deliveryTime = document.getElementById('deliveryTime').value;
+                deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+                if (!deliveryTime) {
+                    alert('Vui lòng chọn thời gian giao hàng');
+                    return;
+                }
+                if (!deliveryAddress) {
+                    alert('Vui lòng nhập địa chỉ giao hàng');
+                    return;
+                }
             }
-            
-            const tableNumbers = selectedTablesForOrder.length > 0 ? selectedTablesForOrder : null;
-            const notes = document.getElementById('orderNotes').value || '';
             
             // Tính tổng tiền
             const total = orderItems.reduce((sum, item) => {
                 return sum + ((item.quantity || 1) * (item.price || 0));
             }, 0);
+            
+            const requestData = {
+                customerId: null, // Không cần customerId khi nhập thủ công
+                customerName,
+                customerPhone,
+                items: orderItems,
+                total,
+                discount: 0,
+                finalTotal: total,
+                numberOfPeople: deliveryType === 'at-table' ? numberOfPeople : 1,
+                eatingTime: deliveryType === 'at-table' ? eatingTime : null,
+                pickupTime: deliveryType === 'takeaway' ? pickupTime : null,
+                deliveryTime: deliveryType === 'delivery' ? deliveryTime : null,
+                deliveryAddress: deliveryType === 'delivery' ? deliveryAddress : null,
+                tableNumbers,
+                deliveryType
+            };
+            
+            console.log('[create-order.js] Sending order data:', JSON.stringify(requestData, null, 2));
+            console.log('[create-order.js] Delivery type:', deliveryType);
+            console.log('[create-order.js] Eating time:', eatingTime);
+            console.log('[create-order.js] Pickup time:', pickupTime);
+            console.log('[create-order.js] Delivery time:', deliveryTime);
             
             try {
                 const response = await fetch('/api/manager/orders/create', {
@@ -792,23 +867,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        customerId: customerId || null,
-                        customerName,
-                        customerPhone,
-                        items: orderItems,
-                        total,
-                        discount: 0,
-                        finalTotal: total,
-                        numberOfPeople,
-                        eatingTime,
-                        tableNumbers,
-                        notes,
-                        deliveryType: 'at-table'
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
                 const data = await response.json();
+                console.log('[create-order.js] Response:', data);
                 
                 if (data.success) {
                     alert('Tạo đơn hàng thành công!');
@@ -818,42 +881,68 @@ document.addEventListener('DOMContentLoaded', function() {
                         switchOrderTab('update');
                     }
                 } else {
+                    console.error('[create-order.js] Error response:', data);
                     alert('Có lỗi xảy ra: ' + (data.error || 'Unknown error'));
                 }
             } catch (error) {
-                console.error('Error creating order:', error);
-                alert('Có lỗi xảy ra khi tạo đơn hàng');
+                console.error('[create-order.js] Error creating order:', error);
+                alert('Có lỗi xảy ra khi tạo đơn hàng: ' + error.message);
             }
         });
     }
     
-    // Ẩn dropdown khi click bên ngoài
-    document.addEventListener('click', function(e) {
-        const searchContainer = document.getElementById('customerSearch');
-        const dropdown = document.getElementById('customerDropdown');
-        if (searchContainer && dropdown && !searchContainer.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
+    // Không cần xử lý dropdown nữa vì đã loại bỏ chức năng tìm kiếm
     
-    // Set thời gian ăn mặc định khi mở tab
-    const eatingTimeInput = document.getElementById('eatingTime');
-    if (eatingTimeInput && !eatingTimeInput.value) {
-        const now = new Date();
-        now.setHours(now.getHours() + 1);
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        eatingTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    // Khởi tạo delivery type và set thời gian mặc định
+    const deliveryTypeSelect = document.getElementById('deliveryType');
+    if (deliveryTypeSelect) {
+        // Gọi handleDeliveryTypeChange để hiển thị đúng field
+        handleDeliveryTypeChange();
+        
+        // Set thời gian mặc định cho field tương ứng
+        const deliveryType = deliveryTypeSelect.value;
+        if (deliveryType === 'at-table') {
+            const eatingTimeInput = document.getElementById('eatingTime');
+            if (eatingTimeInput && !eatingTimeInput.value) {
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                eatingTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+        } else if (deliveryType === 'takeaway') {
+            const pickupTimeInput = document.getElementById('pickupTime');
+            if (pickupTimeInput && !pickupTimeInput.value) {
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                pickupTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+        } else if (deliveryType === 'delivery') {
+            const deliveryTimeInput = document.getElementById('deliveryTime');
+            if (deliveryTimeInput && !deliveryTimeInput.value) {
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                deliveryTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+        }
     }
 });
 
 // Export functions để có thể gọi từ HTML
-window.filterCustomersForOrder = filterCustomersForOrder;
-window.selectCustomerForOrder = selectCustomerForOrder;
-window.clearCustomerSelection = clearCustomerSelection;
+// Các hàm tìm kiếm khách hàng đã được loại bỏ
 window.showMenuTabForOrder = showMenuTabForOrder;
 window.showComboTabForOrder = showComboTabForOrder;
 window.showAllMenuForOrder = showAllMenuForOrder;
@@ -868,6 +957,7 @@ window.confirmTableSelectionForOrder = confirmTableSelectionForOrder;
 window.closeSelectTableForOrderModal = closeSelectTableForOrderModal;
 window.clearTableSelection = clearTableSelection;
 window.resetCreateOrderForm = resetCreateOrderForm;
+window.handleDeliveryTypeChange = handleDeliveryTypeChange;
 window.previewManagerOrder = previewManagerOrder;
 window.closePreviewManagerOrderModal = closePreviewManagerOrderModal;
 
