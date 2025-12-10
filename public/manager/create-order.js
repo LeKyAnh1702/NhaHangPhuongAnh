@@ -761,6 +761,11 @@ function closePreviewManagerOrderModal() {
     document.getElementById('previewManagerOrderModal').style.display = 'none';
 }
 
+// Biến để tránh submit nhiều lần
+if (typeof isSubmittingOrder === 'undefined') {
+    var isSubmittingOrder = false;
+}
+
 // Xử lý submit form và khởi tạo
 document.addEventListener('DOMContentLoaded', function() {
     // Load dữ liệu khi tab được mở lần đầu
@@ -780,8 +785,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const form = document.getElementById('createOrderForm');
     if (form) {
+        // Kiểm tra xem đã có event listener chưa để tránh duplicate
+        if (form.hasAttribute('data-listener-attached')) {
+            console.log('[create-order.js] Event listener already attached, skipping');
+            return;
+        }
+        
+        form.setAttribute('data-listener-attached', 'true');
+        
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
+            // Kiểm tra nếu đang submit thì không submit lại
+            if (isSubmittingOrder) {
+                console.log('[create-order.js] Already submitting, ignoring duplicate submit');
+                return false;
+            }
+            
+            isSubmittingOrder = true;
+            console.log('[create-order.js] Starting order submission...');
             
             if (orderItems.length === 0) {
                 alert('Vui lòng thêm ít nhất một món vào đơn hàng');
@@ -887,6 +910,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('[create-order.js] Error creating order:', error);
                 alert('Có lỗi xảy ra khi tạo đơn hàng: ' + error.message);
+            } finally {
+                // Reset flag sau khi hoàn thành (thành công hoặc lỗi)
+                isSubmittingOrder = false;
             }
         });
     }
