@@ -499,22 +499,26 @@
     text-align: center;
 }
 
-.import-items-table th:nth-child(2) {
-    width: 10%;
-}
-
-.import-items-table th:nth-child(3) {
-    width: 25%;
-}
-
-.import-items-table th:nth-child(4) {
-    width: 10%;
+.import-items-table th:nth-child(1) {
+    width: 5%;
     text-align: center;
 }
 
-.import-items-table th:nth-child(5) {
+.import-items-table th:nth-child(2) {
+    width: 15%;
+}
+
+.import-items-table th:nth-child(3) {
     width: 12%;
-    text-align: right;
+}
+
+.import-items-table th:nth-child(4) {
+    width: 20%;
+}
+
+.import-items-table th:nth-child(5) {
+    width: 10%;
+    text-align: center;
 }
 
 .import-items-table th:nth-child(6) {
@@ -528,14 +532,26 @@
 }
 
 .import-items-table th:nth-child(8) {
-    width: 14%;
-    text-align: center;
+    width: 12%;
+    text-align: right;
+}
+
+.import-items-table th:nth-child(8) {
+    width: 12%;
+    text-align: right;
 }
 
 .import-items-table td {
-    padding: 12px 10px;
+    padding: 10px 8px;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
+}
+
+.import-items-table td input,
+.import-items-table td select {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .import-items-table tbody tr:hover {
@@ -591,12 +607,21 @@
 .quantity-input,
 .price-input {
     width: 100%;
-    padding: 10px;
+    min-width: 80px;
+    padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 0.9rem;
     text-align: right;
     transition: border-color 0.3s;
+    background: white;
+    box-sizing: border-box;
+}
+
+.quantity-input:disabled,
+.price-input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
 }
 
 .quantity-input:focus,
@@ -623,15 +648,12 @@
     text-align: center;
 }
 
-.import-items-table td:nth-child(5),
 .import-items-table td:nth-child(6),
-.import-items-table td:nth-child(7) {
+.import-items-table td:nth-child(7),
+.import-items-table td:nth-child(8) {
     text-align: right;
 }
 
-.import-items-table td:nth-child(8) {
-    text-align: center;
-}
 
 .form-actions {
     display: flex;

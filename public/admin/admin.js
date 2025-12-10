@@ -2129,21 +2129,60 @@ function addImportItem() {
         updateImportItemRow(row, this.value);
     };
     
-    row.innerHTML = `
-        <td>${importItemCounter + 1}</td>
-        <td><div class="material-select-container">${materialSelect.outerHTML}</div></td>
-        <td class="material-code-cell"></td>
-        <td class="material-name-cell"></td>
-        <td class="material-unit-cell"></td>
-        <td><input type="number" class="quantity-input" step="0.1" min="0" placeholder="0.0" onchange="calculateImportItemTotal(this)" oninput="calculateImportItemTotal(this)"></td>
-        <td><input type="number" class="price-input" step="0.01" min="0" placeholder="0.00" onchange="calculateImportItemTotal(this)" oninput="calculateImportItemTotal(this)"></td>
-        <td class="amount-cell">0</td>
-        <td><button type="button" class="btn-delete" onclick="removeImportItem('${importItemCounter}')">Xóa</button></td>
-    `;
+    // Tạo các cell riêng biệt
+    const sttCell = document.createElement('td');
+    sttCell.textContent = importItemCounter + 1;
+    
+    const selectCell = document.createElement('td');
+    selectCell.appendChild(materialSelect);
+    
+    const codeCell = document.createElement('td');
+    codeCell.className = 'material-code-cell';
+    
+    const nameCell = document.createElement('td');
+    nameCell.className = 'material-name-cell';
+    
+    const unitCell = document.createElement('td');
+    unitCell.className = 'material-unit-cell';
+    
+    const quantityCell = document.createElement('td');
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'number';
+    quantityInput.className = 'quantity-input';
+    quantityInput.step = '0.1';
+    quantityInput.min = '0';
+    quantityInput.placeholder = '0.0';
+    quantityInput.onchange = function() { calculateImportItemTotal(this); };
+    quantityInput.oninput = function() { calculateImportItemTotal(this); };
+    quantityCell.appendChild(quantityInput);
+    
+    const priceCell = document.createElement('td');
+    const priceInput = document.createElement('input');
+    priceInput.type = 'number';
+    priceInput.className = 'price-input';
+    priceInput.step = '0.01';
+    priceInput.min = '0';
+    priceInput.placeholder = '0.00';
+    priceInput.onchange = function() { calculateImportItemTotal(this); };
+    priceInput.oninput = function() { calculateImportItemTotal(this); };
+    priceCell.appendChild(priceInput);
+    
+    const amountCell = document.createElement('td');
+    amountCell.className = 'amount-cell';
+    amountCell.textContent = '0';
+    
+    // Thêm tất cả cells vào row
+    row.appendChild(sttCell);
+    row.appendChild(selectCell);
+    row.appendChild(codeCell);
+    row.appendChild(nameCell);
+    row.appendChild(unitCell);
+    row.appendChild(quantityCell);
+    row.appendChild(priceCell);
+    row.appendChild(amountCell);
     
     // Re-attach event listener cho select
-    const select = row.querySelector('.material-select');
-    select.onchange = function() {
+    materialSelect.onchange = function() {
         updateImportItemRow(row, this.value);
     };
     
@@ -2854,20 +2893,60 @@ function addExportItem() {
         await updateExportItemRow(row, this.value);
     };
     
-    row.innerHTML = `
-        <td>${exportItemCounter + 1}</td>
-        <td><div class="material-select-container">${materialSelect.outerHTML}</div></td>
-        <td class="material-code-cell"></td>
-        <td class="material-name-cell"></td>
-        <td class="material-unit-cell"></td>
-        <td><input type="number" class="quantity-input" step="0.1" min="0" placeholder="0.0" onchange="calculateExportItemTotal(this)" oninput="calculateExportItemTotal(this)"></td>
-        <td><input type="number" class="price-input" step="0.01" min="0" placeholder="0.00" onchange="calculateExportItemTotal(this)" oninput="calculateExportItemTotal(this)"></td>
-        <td class="amount-cell">0</td>
-        <td><button type="button" class="btn-delete" onclick="removeExportItem('${exportItemCounter}')">Xóa</button></td>
-    `;
+    // Tạo các cell riêng biệt
+    const sttCell = document.createElement('td');
+    sttCell.textContent = exportItemCounter + 1;
     
-    const select = row.querySelector('.material-select');
-    select.onchange = async function() {
+    const selectCell = document.createElement('td');
+    selectCell.appendChild(materialSelect);
+    
+    const codeCell = document.createElement('td');
+    codeCell.className = 'material-code-cell';
+    
+    const nameCell = document.createElement('td');
+    nameCell.className = 'material-name-cell';
+    
+    const unitCell = document.createElement('td');
+    unitCell.className = 'material-unit-cell';
+    
+    const quantityCell = document.createElement('td');
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'number';
+    quantityInput.className = 'quantity-input';
+    quantityInput.step = '0.1';
+    quantityInput.min = '0';
+    quantityInput.placeholder = '0.0';
+    quantityInput.onchange = function() { calculateExportItemTotal(this); };
+    quantityInput.oninput = function() { calculateExportItemTotal(this); };
+    quantityCell.appendChild(quantityInput);
+    
+    const priceCell = document.createElement('td');
+    const priceInput = document.createElement('input');
+    priceInput.type = 'number';
+    priceInput.className = 'price-input';
+    priceInput.step = '0.01';
+    priceInput.min = '0';
+    priceInput.placeholder = '0.00';
+    priceInput.onchange = function() { calculateExportItemTotal(this); };
+    priceInput.oninput = function() { calculateExportItemTotal(this); };
+    priceCell.appendChild(priceInput);
+    
+    const amountCell = document.createElement('td');
+    amountCell.className = 'amount-cell';
+    amountCell.textContent = '0';
+    
+    // Thêm tất cả cells vào row
+    row.appendChild(sttCell);
+    row.appendChild(selectCell);
+    row.appendChild(codeCell);
+    row.appendChild(nameCell);
+    row.appendChild(unitCell);
+    row.appendChild(quantityCell);
+    row.appendChild(priceCell);
+    row.appendChild(amountCell);
+    
+    // Re-attach event listener cho select
+    materialSelect.onchange = async function() {
         await updateExportItemRow(row, this.value);
     };
     
